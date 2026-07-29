@@ -1,0 +1,237 @@
+// Prisma Schema for Multi-Company Sales Visit Management CRM
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite" // Kept as sqlite to match existing, upgrade to postgresql recommended
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String         @id @default(uuid())
+  name          String
+  email         String         @unique
+  password      String
+  phone         String?
+  role          String         @default("EMPLOYEE") // ADMIN, MANAGER, EMPLOYEE
+  status        String         @default("ACTIVE")   // ACTIVE, INACTIVE
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  employee      Employee?
+  activityLogs  ActivityLog[]
+  notifications Notification[]
+}
+
+model Company {
+  id             String               @id @default(uuid())
+  name           String
+  code           String               @unique
+  logo           String?
+  address        String?
+  phone          String?
+  email          String?
+  website        String?
+  gstNumber      String?
+  status         String               @default("ACTIVE") // ACTIVE, INACTIVE
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+  employees      EmployeeCompany[]
+  assignments    CustomerAssignment[]
+  visits         Visit[]
+  products       Product[]
+  sales          Sale[]
+  emailTemplates EmailTemplate[]
+  activityLogs   ActivityLog[]
+}
+
+model Employee {
+  id          String               @id @default(uuid())
+  userId      String               @unique
+  user        User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  designation String?
+  department  String?
+  status      String               @default("ACTIVE") // ACTIVE, INACTIVE
+  companies   EmployeeCompany[]
+  assignments CustomerAssignment[]
+  visits      Visit[]
+  sales       Sale[]
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+}
+
+model EmployeeCompany {
+  id          String    @id @default(uuid())
+  employeeId  String
+  employee    Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  companyId   String
+  company     Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  role        String?
+  isPrimary   Boolean   @default(false)
+  status      String    @default("ACTIVE") // ACTIVE, INACTIVE
+  joiningDate DateTime?
+  leavingDate DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([employeeId, companyId])
+}
+
+model Customer {
+  id          String               @id @default(uuid())
+  name        String
+  companyName String?
+  phone       String               @unique // Ensures unique global customer
+  email       String?              
+  address     String?
+  city        String?
+  state       String?
+  country     String?
+  pincode     String?
+  website     String?
+  industry    String?
+  remarks     String?
+  createdBy   String?
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+  assignments CustomerAssignment[]
+  visits      Visit[]
+  sales       Sale[]
+  followUps   FollowUp[]
+}
+
+model CustomerAssignment {
+  id             String   @id @default(uuid())
+  customerId     String
+  customer       Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  companyId      String
+  company        Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  employeeId     String
+  employee       Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  status         String   @default("ACTIVE") // ACTIVE, INACTIVE
+  reason         String?
+  remarks        String?
+  assignmentDate DateTime @default(now())
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Visit {
+  id               String    @id @default(uuid())
+  customerId       String
+  customer         Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  companyId        String
+  company          Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  employeeId       String
+  employee         Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  visitDate        DateTime
+  visitTime        String?
+  visitType        String    @default("COLD_VISIT") 
+  location         String?
+  latitude         Float?
+  longitude        Float?
+  status           String    @default("PENDING") // COMPLETED, PENDING, CANCELLED
+  visitReport      String?
+  nextFollowupDate DateTime?
+  attachment       String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}
+
+model Product {
+  id        String     @id @default(uuid())
+  companyId String
+  company   Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  name      String
+  sku       String?
+  category  String?
+  price     Float
+  tax       Float      @default(0)
+  status    String     @default("ACTIVE") // ACTIVE, INACTIVE
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  saleItems SaleItem[]
+}
+
+model Sale {
+  id            String     @id @default(uuid())
+  customerId    String
+  customer      Customer   @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  companyId     String
+  company       Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  employeeId    String
+  employee      Employee   @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  invoiceNumber String
+  invoiceDate   DateTime
+  amount        Float
+  tax           Float      @default(0)
+  discount      Float      @default(0)
+  grandTotal    Float
+  paymentStatus String     @default("PENDING") // PAID, PENDING, PARTIAL
+  remarks       String?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  items         SaleItem[]
+  
+  @@unique([companyId, invoiceNumber])
+}
+
+model SaleItem {
+  id        String  @id @default(uuid())
+  saleId    String
+  sale      Sale    @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  quantity  Int
+  price     Float
+  total     Float
+}
+
+model EmailTemplate {
+  id          String   @id @default(uuid())
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  name        String
+  subject     String
+  body        String
+  senderEmail String?
+  status      String   @default("ACTIVE") // ACTIVE, INACTIVE
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model FollowUp {
+  id         String   @id @default(uuid())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  date       DateTime
+  notes      String?
+  status     String   @default("PENDING") // PENDING, COMPLETED, OVERDUE
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model ActivityLog {
+  id          String   @id @default(uuid())
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  companyId   String?
+  company     Company? @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  module      String
+  action      String
+  description String
+  ipAddress   String?
+  createdAt   DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+  link      String?
+  createdAt DateTime @default(now())
+}
