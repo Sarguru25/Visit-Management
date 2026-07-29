@@ -21,3 +21,5 @@ export function errorResponse(message = "An error occurred", status = 400, error
     { status }
   );
 }
+
+export const API_BASE = process.env.NEXT_PUBLIC_APP_URL || "";

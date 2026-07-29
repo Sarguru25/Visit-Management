@@ -1,4 +1,5 @@
 "use client";
+import { API_BASE } from "@/lib/api";
 
 import React, { useEffect, useState } from "react";
 import { History, Search, Filter, ShieldCheck, User } from "lucide-react";
@@ -27,7 +28,7 @@ export default function AdminActivityLogsPage() {
   const loadLogs = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`/api/activity-logs?search=${search}&action=${actionFilter}`);
+      const res = await fetch(`${API_BASE}/api/activity-logs?search=${search}&action=${actionFilter}`);
       const json = await res.json();
       if (json.success) setLogs(json.data);
     } catch (e) {

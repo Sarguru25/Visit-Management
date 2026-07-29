@@ -1,4 +1,5 @@
 "use client";
+import { API_BASE } from "@/lib/api";
 
 import React, { useEffect, useState } from "react";
 import {
@@ -32,13 +33,11 @@ interface DashboardData {
   stats: {
     totalEmployees: number;
     activeEmployees: number;
-    totalLeads: number;
+    totalCustomers: number;
     todaysVisits: number;
     pendingVisits: number;
     completedVisits: number;
     monthlyVisits: number;
-    wonLeads: number;
-    lostLeads: number;
   };
   charts: {
     visitsPerMonth: Array<{ month: string; visits: number }>;
@@ -64,10 +63,10 @@ export default function AdminDashboardPage() {
     async function loadDashboard() {
       try {
         const [empRes, customersRes, visitsRes, logsRes] = await Promise.all([
-          fetch("/api/employees"),
-          fetch("/api/customers"),
-          fetch("/api/visits"),
-          fetch("/api/activity-logs"),
+          fetch(`${API_BASE}/api/employees`),
+          fetch(`${API_BASE}/api/customers`),
+          fetch(`${API_BASE}/api/visits`),
+          fetch(`${API_BASE}/api/activity-logs`),
         ]);
 
         const employees = (await empRes.json()).data || [];

@@ -20,9 +20,9 @@ export async function sendVisitThankYouEmail({
 
   try {
     // 1. Fetch system settings
-    const settings = await prisma.systemSetting.findMany();
+    const settings = await (prisma as any).systemSetting?.findMany() || [];
     const settingsMap: Record<string, string> = {};
-    settings.forEach((s) => (settingsMap[s.key] = s.value));
+    settings.forEach((s: any) => (settingsMap[s.key] = s.value));
 
     const companyName = settingsMap.companyName || "Sales Visit Pro Inc.";
     const smtpHost = settingsMap.smtpHost || process.env.SMTP_HOST || "smtp.mailtrap.io";
@@ -105,9 +105,9 @@ export async function sendLeadGreetingEmail({
   if (!customerEmail) return;
 
   try {
-    const settings = await prisma.systemSetting.findMany();
+    const settings = await (prisma as any).systemSetting?.findMany() || [];
     const settingsMap: Record<string, string> = {};
-    settings.forEach((s) => (settingsMap[s.key] = s.value));
+    settings.forEach((s: any) => (settingsMap[s.key] = s.value));
 
     const companyName = settingsMap.companyName || "Sales Visit Pro Inc.";
     const smtpHost = settingsMap.smtpHost || process.env.SMTP_HOST || "smtp.mailtrap.io";

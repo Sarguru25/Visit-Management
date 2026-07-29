@@ -1,4 +1,5 @@
 "use client";
+import { API_BASE } from "@/lib/api";
 
 import React, { useEffect, useState } from "react";
 import { Mail, Edit, Plus, Sparkles, CheckCircle2, XCircle } from "lucide-react";
@@ -33,7 +34,7 @@ export default function AdminEmailTemplatesPage() {
   const loadTemplates = async () => {
     try {
       setLoading(true);
-      const res = await fetch("/api/email-templates");
+      const res = await fetch(`${API_BASE}/api/email-templates`);
       const json = await res.json();
       if (json.success) setTemplates(json.data);
     } catch (e) {
@@ -45,7 +46,7 @@ export default function AdminEmailTemplatesPage() {
 
   const loadCompanies = async () => {
     try {
-      const res = await fetch("/api/companies");
+      const res = await fetch(`${API_BASE}/api/companies`);
       const json = await res.json();
       if (json.success) setCompanies(json.data);
     } catch (e) {

@@ -18,6 +18,7 @@ import {
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
+import { API_BASE } from "@/lib/api";
 
 interface LeadDetailsProps {
   leadId: string;
@@ -67,7 +68,7 @@ export function LeadDetailsClient({ leadId, role }: LeadDetailsProps) {
   useEffect(() => {
     async function fetchCustomer() {
       try {
-        const res = await fetch(`/api/customers/${leadId}`);
+        const res = await fetch(`${API_BASE}/api/customers/${leadId}`);
         const json = await res.json();
         if (json.success) setCustomer(json.data);
       } catch (e) {

@@ -1,4 +1,5 @@
 "use client";
+import { API_BASE } from "@/lib/api";
 
 import React, { useEffect, useState } from "react";
 import {
@@ -105,7 +106,7 @@ export function LeadsClient({ role }: CustomersClientProps) {
   const loadCustomers = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`/api/customers?search=${encodeURIComponent(search)}&companyId=${companyFilter}&segment=${encodeURIComponent(segmentFilter)}&type=${encodeURIComponent(typeFilter)}`);
+      const res = await fetch(`${API_BASE}/api/customers?search=${encodeURIComponent(search)}&companyId=${companyFilter}&segment=${encodeURIComponent(segmentFilter)}&type=${encodeURIComponent(typeFilter)}`);
       const json = await res.json();
       if (json.success) setCustomers(json.data);
     } catch (e) {
@@ -117,12 +118,12 @@ export function LeadsClient({ role }: CustomersClientProps) {
 
   const loadDependencies = async () => {
     try {
-      const compRes = await fetch("/api/companies");
+      const compRes = await fetch(`${API_BASE}/api/companies`);
       const compJson = await compRes.json();
       if (compJson.success) setCompanies(compJson.data);
 
       if (role === "ADMIN") {
-        const empRes = await fetch("/api/employees");
+        const empRes = await fetch(`${API_BASE}/api/employees`);
         const empJson = await empRes.json();
         if (empJson.success) setEmployees(empJson.data);
       }
@@ -145,7 +146,7 @@ export function LeadsClient({ role }: CustomersClientProps) {
     setErrorMsg("");
 
     try {
-      const res = await fetch("/api/customers", {
+      const res = await fetch(`${API_BASE}/api/customers`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -174,7 +175,7 @@ export function LeadsClient({ role }: CustomersClientProps) {
     setErrorMsg("");
 
     try {
-      const res = await fetch(`/api/customers/${editingId}`, {
+      const res = await fetch(`${API_BASE}/api/customers/${editingId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -211,7 +212,7 @@ export function LeadsClient({ role }: CustomersClientProps) {
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this customer? All their assignments and visits will be deleted as well.")) return;
     try {
-      const res = await fetch(`/api/customers/${id}`, { method: "DELETE" });
+      const res = await fetch(`${API_BASE}/api/customers/${id}`, { method: "DELETE" });
       const json = await res.json();
       if (json.success) {
         await loadCustomers();
@@ -362,7 +363,7 @@ export function LeadsClient({ role }: CustomersClientProps) {
                   </td>
                   <td className="px-6 py-4">
                     {customer.industry ? (
-                      <Badge variant="secondary" className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-none">
+                      <Badge variant="outline" className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-none">
                         {customer.industry}
                       </Badge>
                     ) : (

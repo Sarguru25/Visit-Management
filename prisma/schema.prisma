@@ -5,7 +5,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite" // Kept as sqlite to match existing, upgrade to postgresql recommended
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 

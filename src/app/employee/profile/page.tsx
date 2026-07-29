@@ -1,4 +1,5 @@
 "use client";
+import { API_BASE } from "@/lib/api";
 
 import React, { useState } from "react";
 import { User, Lock, KeyRound, CheckCircle2, AlertCircle } from "lucide-react";
@@ -27,7 +28,7 @@ export default function EmployeeProfilePage() {
 
     setLoading(true);
     try {
-      const res = await fetch("/api/auth/change-password", {
+      const res = await fetch(`${API_BASE}/api/auth/change-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ currentPassword, newPassword }),

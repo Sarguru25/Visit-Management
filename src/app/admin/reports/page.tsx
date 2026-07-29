@@ -1,4 +1,5 @@
 "use client";
+import { API_BASE } from "@/lib/api";
 
 import React, { useEffect, useState } from "react";
 import {
@@ -71,9 +72,9 @@ export default function AdminReportsPage() {
     async function loadFilterOptions() {
       try {
         const [empRes, custRes, compRes] = await Promise.all([
-          fetch("/api/employees"),
-          fetch("/api/customers"),
-          fetch("/api/companies"),
+          fetch(`${API_BASE}/api/employees`),
+          fetch(`${API_BASE}/api/customers`),
+          fetch(`${API_BASE}/api/companies`),
         ]);
         const emps = await empRes.json();
         const custs = await custRes.json();
@@ -103,7 +104,7 @@ export default function AdminReportsPage() {
         type,
       }).toString();
 
-      const res = await fetch(`/api/reports?${queryParams}`);
+      const res = await fetch(`${API_BASE}/api/reports?${queryParams}`);
       const json = await res.json();
       if (json.success) {
         setReports(json.data.visits);

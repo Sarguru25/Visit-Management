@@ -1,4 +1,5 @@
 "use client";
+import { API_BASE } from "@/lib/api";
 
 import React, { useEffect, useState } from "react";
 import { Settings as SettingsIcon, Building, Mail, Server, Save, CheckCircle2 } from "lucide-react";
@@ -24,7 +25,7 @@ export default function AdminSettingsPage() {
   useEffect(() => {
     async function loadSettings() {
       try {
-        const res = await fetch("/api/settings");
+        const res = await fetch(`${API_BASE}/api/settings`);
         const json = await res.json();
         if (json.success && Object.keys(json.data).length > 0) {
           setSettings((prev) => ({ ...prev, ...json.data }));
@@ -43,7 +44,7 @@ export default function AdminSettingsPage() {
     setSaving(true);
     setSuccessMsg("");
     try {
-      const res = await fetch("/api/settings", {
+      const res = await fetch(`${API_BASE}/api/settings`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(settings),

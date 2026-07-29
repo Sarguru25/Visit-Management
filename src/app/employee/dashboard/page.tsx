@@ -1,4 +1,5 @@
 "use client";
+import { API_BASE } from "@/lib/api";
 
 import React, { useEffect, useState } from "react";
 import {
@@ -21,8 +22,7 @@ interface EmployeeDashboardData {
     pendingVisits: number;
     todaysFollowups: number;
     completedVisits: number;
-    totalLeads: number;
-    newLeads: number;
+    totalCustomers: number;
   };
   recentVisits: Array<{
     id: string;
@@ -30,12 +30,12 @@ interface EmployeeDashboardData {
     visitTime: string;
     visitType: string;
     status: string;
-    lead: { fullName: string; companyName: string; phone: string };
+    customer: { name: string; companyName: string; phone: string };
   }>;
   upcomingFollowups: Array<{
     id: string;
     nextFollowupDate: string;
-    lead: { fullName: string; companyName: string; phone: string };
+    customer: { name: string; companyName: string; phone: string };
     visitType: string;
   }>;
 }
@@ -48,8 +48,8 @@ export default function EmployeeDashboardPage() {
     async function loadDashboard() {
       try {
         const [customersRes, visitsRes] = await Promise.all([
-          fetch("/api/customers"),
-          fetch("/api/visits"),
+          fetch(`${API_BASE}/api/customers`),
+          fetch(`${API_BASE}/api/visits`),
         ]);
 
         const customers = (await customersRes.json()).data || [];

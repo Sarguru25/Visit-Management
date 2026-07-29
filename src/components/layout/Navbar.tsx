@@ -1,4 +1,5 @@
 "use client";
+import { API_BASE } from "@/lib/api";
 
 import React, { useState, useEffect, useRef } from "react";
 import { useTheme } from "@/components/theme-provider";
@@ -61,7 +62,7 @@ export function Navbar({ user, onMenuClick }: NavbarProps) {
   //   setIsSearching(true);
   //   const timer = setTimeout(async () => {
   //     try {
-  //       const res = await fetch(`/api/search?q=${encodeURIComponent(searchQuery)}`);
+  //       const res = await fetch(`${API_BASE}/api/search?q=${encodeURIComponent(searchQuery)}`);
   //       const json = await res.json();
   //       if (json.success) {
   //         setSearchResults(json.data);
@@ -92,7 +93,7 @@ export function Navbar({ user, onMenuClick }: NavbarProps) {
   // }, []);
 
   const handleLogout = async () => {
-    await fetch("/api/auth/logout", { method: "POST" });
+    await fetch(`${API_BASE}/api/auth/logout`, { method: "POST" });
     router.push("/login");
     router.refresh();
   };

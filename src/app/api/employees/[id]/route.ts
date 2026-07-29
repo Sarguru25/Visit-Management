@@ -30,17 +30,17 @@ export async function GET(
             updatedAt: true,
           },
         },
-        leads: {
+        assignments: {
           take: 10,
           orderBy: { createdAt: "desc" },
         },
         visits: {
           take: 10,
           orderBy: { createdAt: "desc" },
-          include: { lead: true },
+          include: { customer: true },
         },
         _count: {
-          select: { leads: true, visits: true },
+          select: { assignments: true, visits: true },
         },
       },
     });

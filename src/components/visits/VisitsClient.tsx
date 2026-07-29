@@ -1,4 +1,5 @@
 "use client";
+import { API_BASE } from "@/lib/api";
 
 import React, { useEffect, useState } from "react";
 import {
@@ -123,11 +124,11 @@ export function VisitsClient({ role }: VisitsClientProps) {
 
   const loadDependencies = async () => {
     try {
-      const custRes = await fetch("/api/customers");
+      const custRes = await fetch(`${API_BASE}/api/customers`);
       const custJson = await custRes.json();
       if (custJson.success) setCustomers(custJson.data);
 
-      const compRes = await fetch("/api/companies");
+      const compRes = await fetch(`${API_BASE}/api/companies`);
       const compJson = await compRes.json();
       if (compJson.success) setCompanies(compJson.data);
     } catch (e) {
@@ -205,7 +206,7 @@ export function VisitsClient({ role }: VisitsClientProps) {
     bodyData.append("file", file);
 
     try {
-      const res = await fetch("/api/upload", {
+      const res = await fetch(`${API_BASE}/api/upload`, {
         method: "POST",
         body: bodyData,
       });
@@ -229,7 +230,7 @@ export function VisitsClient({ role }: VisitsClientProps) {
     setErrorMsg("");
 
     try {
-      const res = await fetch("/api/visits", {
+      const res = await fetch(`${API_BASE}/api/visits`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -263,7 +264,7 @@ export function VisitsClient({ role }: VisitsClientProps) {
     setErrorMsg("");
 
     try {
-      const res = await fetch(`/api/visits/${selectedVisit.id}`, {
+      const res = await fetch(`${API_BASE}/api/visits/${selectedVisit.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -294,7 +295,7 @@ export function VisitsClient({ role }: VisitsClientProps) {
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this visit record?")) return;
     try {
-      const res = await fetch(`/api/visits/${id}`, { method: "DELETE" });
+      const res = await fetch(`${API_BASE}/api/visits/${id}`, { method: "DELETE" });
       const json = await res.json();
       if (json.success) {
         await loadVisits();

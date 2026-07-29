@@ -17,7 +17,7 @@ export async function GET(
     const visit = await prisma.visit.findUnique({
       where: { id },
       include: {
-        lead: true,
+        customer: true,
         employee: {
           include: { user: { select: { name: true, email: true, phone: true } } },
         },
@@ -69,13 +69,13 @@ export async function PUT(
         nextFollowupDate: body.nextFollowupDate !== undefined ? body.nextFollowupDate : visit.nextFollowupDate,
         attachment: body.attachment !== undefined ? body.attachment : visit.attachment,
       },
-      include: { lead: true },
+      include: { customer: true },
     });
 
     await logActivity({
       userId: session.userId,
       action: "VISIT_UPDATED",
-      description: `Updated visit report for lead ${updatedVisit.lead.fullName}.`,
+      description: `Updated visit report for customer ${updatedVisit.customer.name}.`,
       ip: req.headers.get("x-forwarded-for") || "127.0.0.1",
     });
 
@@ -98,7 +98,7 @@ export async function DELETE(
 
     const visit = await prisma.visit.findUnique({
       where: { id },
-      include: { lead: true },
+      include: { customer: true },
     });
 
     if (!visit) return errorResponse("Visit not found", 404);
@@ -112,7 +112,7 @@ export async function DELETE(
     await logActivity({
       userId: session.userId,
       action: "VISIT_DELETED",
-      description: `Deleted visit record for lead ${visit.lead.fullName}.`,
+      description: `Deleted visit record for customer ${visit.customer.name}.`,
       ip: req.headers.get("x-forwarded-for") || "127.0.0.1",
     });
 

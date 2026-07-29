@@ -1,4 +1,5 @@
 "use client";
+import { API_BASE } from "@/lib/api";
 
 import React, { useEffect, useState } from "react";
 import {
@@ -65,7 +66,7 @@ export default function AdminEmployeesPage() {
   const loadEmployees = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`/api/employees?search=${search}&department=${departmentFilter}`);
+      const res = await fetch(`${API_BASE}/api/employees?search=${search}&department=${departmentFilter}`);
       const json = await res.json();
       if (json.success) setEmployees(json.data);
     } catch (e) {
@@ -82,7 +83,7 @@ export default function AdminEmployeesPage() {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await fetch("/api/employees", {
+      const res = await fetch(`${API_BASE}/api/employees`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -113,7 +114,7 @@ export default function AdminEmployeesPage() {
     e.preventDefault();
     if (!selectedEmp) return;
     try {
-      const res = await fetch(`/api/employees/${selectedEmp.id}`, {
+      const res = await fetch(`${API_BASE}/api/employees/${selectedEmp.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -142,7 +143,7 @@ export default function AdminEmployeesPage() {
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this employee account?")) return;
     try {
-      const res = await fetch(`/api/employees/${id}`, { method: "DELETE" });
+      const res = await fetch(`${API_BASE}/api/employees/${id}`, { method: "DELETE" });
       if (res.ok) loadEmployees();
     } catch (e) {
       console.error(e);

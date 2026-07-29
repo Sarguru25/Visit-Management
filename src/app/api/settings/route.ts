@@ -9,9 +9,9 @@ export async function GET() {
     const session = await getSessionUser();
     if (!session) return errorResponse("Unauthorized", 401);
 
-    const settings = await prisma.systemSetting.findMany();
+    const settings = await (prisma as any).systemSetting?.findMany() || [];
     const settingsMap: Record<string, string> = {};
-    settings.forEach((s) => (settingsMap[s.key] = s.value));
+    settings.forEach((s: any) => (settingsMap[s.key] = s.value));
 
     return successResponse(settingsMap, "Settings retrieved");
   } catch (error) {
@@ -31,7 +31,7 @@ export async function PUT(req: NextRequest) {
 
     for (const [key, value] of Object.entries(body)) {
       if (typeof value === "string") {
-        await prisma.systemSetting.upsert({
+        await (prisma as any).systemSetting?.upsert({
           where: { key },
           update: { value },
           create: { key, value },
