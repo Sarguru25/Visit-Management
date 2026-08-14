@@ -29,10 +29,10 @@ export function LayoutWrapper({ user, children }: LayoutWrapperProps) {
     const currentX = e.targetTouches[0].clientX;
     const diff = currentX - touchStart;
 
-    if (diff > 50 && !isSidebarOpen) {
+    if (diff > 120 && !isSidebarOpen) {
       setIsSidebarOpen(true);
       setTouchStart(null);
-    } else if (diff < -50 && isSidebarOpen) {
+    } else if (diff < -120 && isSidebarOpen) {
       setIsSidebarOpen(false);
       setTouchStart(null);
     }

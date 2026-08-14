@@ -50,6 +50,7 @@ export function Navbar({ user, onMenuClick }: NavbarProps) {
 
   const searchRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
+  const notificationRef = useRef<HTMLDivElement>(null);
 
   // Global search debounce effect
   // useEffect(() => {
@@ -79,18 +80,21 @@ export function Navbar({ user, onMenuClick }: NavbarProps) {
   // }, [searchQuery]);
 
   // Handle outside clicks
-  // useEffect(() => {
-  //   const handleClickOutside = (event: MouseEvent) => {
-  //     if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
-  //       setShowSearchResults(false);
-  //     }
-  //     if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
-  //       setShowUserMenu(false);
-  //     }
-  //   };
-  //   document.addEventListener("mousedown", handleClickOutside);
-  //   return () => document.removeEventListener("mousedown", handleClickOutside);
-  // }, []);
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      // if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+      //   setShowSearchResults(false);
+      // }
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setShowUserMenu(false);
+      }
+      if (notificationRef.current && !notificationRef.current.contains(event.target as Node)) {
+        setShowNotifications(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleLogout = async () => {
     await fetch(`${API_BASE}/api/auth/logout`, { method: "POST" });
@@ -258,7 +262,7 @@ export function Navbar({ user, onMenuClick }: NavbarProps) {
           </button> */}
 
           {/* Notifications Button & Popover */}
-          <div className="relative">
+          <div className="relative" ref={notificationRef}>
             <button
               onClick={() => setShowNotifications(!showNotifications)}
               className="p-3 -m-1 rounded-xl text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors relative"

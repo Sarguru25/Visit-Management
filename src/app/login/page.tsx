@@ -55,60 +55,61 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4 relative overflow-hidden">
-      {/* Dynamic Background Accents for Light Theme */}
-      <div className="absolute -top-40 -left-40 w-96 h-96 rounded-full bg-blue-400/20 blur-3xl" />
-      <div className="absolute -bottom-40 -right-40 w-96 h-96 rounded-full bg-indigo-400/20 blur-3xl" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl h-96 rounded-full bg-violet-300/10 blur-3xl" />
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4 relative overflow-hidden selection:bg-blue-500/30">
+      {/* Dynamic Background Accents */}
+      <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-blue-100 via-slate-50 to-slate-50" />
+      <div className="absolute -top-40 -left-40 w-96 h-96 rounded-full bg-blue-400/30 blur-3xl mix-blend-multiply animate-pulse" />
+      <div className="absolute -bottom-40 -right-40 w-96 h-96 rounded-full bg-indigo-400/30 blur-3xl mix-blend-multiply animate-pulse" style={{ animationDelay: "2s" }} />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl h-96 rounded-full bg-violet-300/20 blur-3xl mix-blend-multiply animate-pulse" style={{ animationDelay: "4s" }} />
 
-      <div className="relative w-full max-w-md bg-white/80 p-8 rounded-[2rem] border border-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] backdrop-blur-xl">
+      <div className="relative w-full max-w-md bg-white/70 p-8 sm:p-10 rounded-[2.5rem] border border-white/80 shadow-[0_8px_40px_rgb(0,0,0,0.08)] backdrop-blur-2xl">
         {/* Header Branding */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 shadow-lg shadow-blue-500/30 text-white font-extrabold text-2xl mb-4">
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-3xl bg-gradient-to-tr from-blue-600 to-indigo-600 shadow-xl shadow-blue-500/40 text-white font-extrabold text-3xl mb-5 ring-4 ring-white/50">
             SV
           </div>
-          <h1 className="text-2xl font-black tracking-tight text-slate-900">Sales Visit Pro</h1>
-          <p className="text-xs text-slate-500 mt-1.5 font-medium">Enterprise Field Sales & Visit Intelligence</p>
+          <h1 className="text-3xl font-black tracking-tight text-slate-900">Sales Visit Pro</h1>
+          <p className="text-sm text-slate-500 mt-2 font-medium">Enterprise Field Sales & Visit Intelligence</p>
         </div>
 
         {error && (
-          <div className="mb-6 p-4 rounded-2xl bg-rose-50 border border-rose-100 text-rose-600 text-sm font-medium text-center animate-in fade-in">
+          <div className="mb-6 p-4 rounded-2xl bg-rose-50/80 border border-rose-100/80 text-rose-600 text-sm font-semibold text-center animate-in fade-in slide-in-from-top-2">
             {error}
           </div>
         )}
 
-        <form onSubmit={handleLogin} className="space-y-5">
-          <div>
-            <label className="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wider">Email Address</label>
+        <form onSubmit={handleLogin} className="space-y-6">
+          <div className="space-y-2">
+            <label className="block text-xs font-bold text-slate-700 uppercase tracking-widest ml-1">Email Address</label>
             <div className="relative group">
-              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-blue-600 transition-colors" />
               <input
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="admin@gmail.com"
-                className="w-full pl-12 pr-4 py-3 rounded-2xl bg-slate-50 border border-slate-200 text-slate-900 text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all hover:bg-white"
+                className="w-full pl-12 pr-4 py-3.5 rounded-2xl bg-white/80 border border-slate-200/80 text-slate-900 text-sm placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all hover:bg-white shadow-sm"
               />
             </div>
           </div>
 
-          <div>
-            <label className="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wider">Password</label>
+          <div className="space-y-2">
+            <label className="block text-xs font-bold text-slate-700 uppercase tracking-widest ml-1">Password</label>
             <div className="relative group">
-              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-blue-600 transition-colors" />
               <input
                 type={showPassword ? "text" : "password"}
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full pl-12 pr-12 py-3 rounded-2xl bg-slate-50 border border-slate-200 text-slate-900 text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all hover:bg-white"
+                className="w-full pl-12 pr-12 py-3.5 rounded-2xl bg-white/80 border border-slate-200/80 text-slate-900 text-sm placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all hover:bg-white shadow-sm"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600 transition-colors p-1"
               >
                 {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
@@ -118,14 +119,14 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3.5 px-4 rounded-2xl bg-blue-600 hover:bg-slate-800 text-white font-bold text-sm shadow-xl shadow-slate-900/20 transition-all flex items-center justify-center space-x-2 group disabled:opacity-50 mt-2"
+            className="w-full py-4 px-4 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-sm shadow-xl shadow-blue-900/20 transition-all flex items-center justify-center space-x-2 group disabled:opacity-50 mt-4 active:scale-[0.98]"
           >
             <span>{loading ? "Authenticating..." : "Sign In to Dashboard"}</span>
             {!loading && <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />}
           </button>
         </form>
 
-        <div className="mt-8 text-center text-xs text-slate-500 flex items-center justify-center gap-1.5 font-medium">
+        <div className="mt-8 pt-6 border-t border-slate-200/60 text-center text-xs text-slate-500 flex items-center justify-center gap-2 font-medium">
           <ShieldCheck className="w-4 h-4 text-emerald-500" /> Encrypted JWT Authentication Session
         </div>
       </div>
