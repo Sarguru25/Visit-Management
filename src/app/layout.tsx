@@ -21,7 +21,9 @@ export default async function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className="antialiased selection:bg-blue-500 selection:text-white">
         <ThemeProvider defaultTheme="light">
-          <LayoutWrapper user={sessionUser}>{children}</LayoutWrapper>
+          <LayoutWrapper user={sessionUser}>
+            {children}
+            </LayoutWrapper>
         </ThemeProvider>
       </body>
     </html>

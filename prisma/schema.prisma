@@ -19,7 +19,6 @@ model User {
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   employee      Employee?
-  activityLogs  ActivityLog[]
   notifications Notification[]
 }
 
@@ -42,7 +41,6 @@ model Company {
   products       Product[]
   sales          Sale[]
   emailTemplates EmailTemplate[]
-  activityLogs   ActivityLog[]
 }
 
 model Employee {
@@ -209,19 +207,6 @@ model FollowUp {
   status     String   @default("PENDING") // PENDING, COMPLETED, OVERDUE
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
-}
-
-model ActivityLog {
-  id          String   @id @default(uuid())
-  userId      String?
-  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-  companyId   String?
-  company     Company? @relation(fields: [companyId], references: [id], onDelete: SetNull)
-  module      String
-  action      String
-  description String
-  ipAddress   String?
-  createdAt   DateTime @default(now())
 }
 
 model Notification {

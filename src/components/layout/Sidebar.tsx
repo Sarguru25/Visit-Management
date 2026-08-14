@@ -31,8 +31,6 @@ export function Sidebar({ role, isOpen, onClose }: SidebarProps) {
     { name: "Visits", href: "/admin/visits", icon: MapPin },
     { name: "Reports & Export", href: "/admin/reports", icon: FileSpreadsheet },
     { name: "Email Templates", href: "/admin/email-templates", icon: Mail },
-    { name: "Activity Logs", href: "/admin/activity-logs", icon: History },
-    { name: "Settings", href: "/admin/settings", icon: Settings },
   ];
 
   const employeeLinks = [
@@ -101,12 +99,12 @@ export function Sidebar({ role, isOpen, onClose }: SidebarProps) {
       </div>
 
       {/* Footer System Info */}
-      <div className="mt-auto pt-4 border-t border-slate-200 dark:border-slate-800">
+      {/* <div className="mt-auto pt-4 border-t border-slate-200 dark:border-slate-800">
         <div className="px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 flex items-center space-x-2 text-[11px] text-slate-500">
           <ShieldAlert className="w-4 h-4 text-emerald-500" />
           <span className="font-medium">System Online • v1.0.0</span>
         </div>
-      </div>
+      </div> */}
     </aside>
     </>
   );

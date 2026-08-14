@@ -18,16 +18,8 @@ export async function logActivity({
   ipAddress?: string;
 }) {
   try {
-    await prisma.activityLog.create({
-      data: {
-        userId: userId || null,
-        companyId: companyId || null,
-        module,
-        action,
-        description,
-        ipAddress: ipAddress || ip,
-      },
-    });
+    // Activity logging disabled as per user request to save storage
+    // await prisma.activityLog.create({ ... });
   } catch (error) {
     console.error("Failed to record activity log:", error);
   }

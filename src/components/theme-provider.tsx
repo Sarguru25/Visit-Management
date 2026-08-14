@@ -23,19 +23,16 @@ export function ThemeProvider({
   const [theme, setThemeState] = useState<Theme>(defaultTheme);
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem("theme") as Theme | null;
-    if (savedTheme) {
-      setThemeState(savedTheme);
-      document.documentElement.classList.toggle("dark", savedTheme === "dark");
-    } else {
-      document.documentElement.classList.toggle("dark", defaultTheme === "dark");
-    }
+    // Temporarily forcing light theme
+    setThemeState("light");
+    document.documentElement.classList.remove("dark");
   }, [defaultTheme]);
 
   const setTheme = (newTheme: Theme) => {
-    setThemeState(newTheme);
-    localStorage.setItem("theme", newTheme);
-    document.documentElement.classList.toggle("dark", newTheme === "dark");
+    // Theme switching paused
+    // setThemeState(newTheme);
+    // localStorage.setItem("theme", newTheme);
+    // document.documentElement.classList.toggle("dark", newTheme === "dark");
   };
 
   return (

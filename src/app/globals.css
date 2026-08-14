@@ -2,6 +2,20 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+@theme {
+  /* Override default slate (navy-tinted gray) with pure neutral grays */
+  --color-slate-50: #fafafa;
+  --color-slate-100: #f5f5f5;
+  --color-slate-200: #e5e5e5;
+  --color-slate-300: #d4d4d4;
+  --color-slate-400: #a3a3a3;
+  --color-slate-500: #737373;
+  --color-slate-600: #525252;
+  --color-slate-700: #404040;
+  --color-slate-800: #262626;
+  --color-slate-900: #171717;
+  --color-slate-950: #0a0a0a;
+}
 @layer base {
   :root {
     --background: 210 40% 98%;
@@ -27,25 +41,25 @@
   }
 
   .dark {
-    --background: 222 47% 11%;
-    --foreground: 210 40% 98%;
-    --card: 217.2 32.6% 17.5%;
-    --card-foreground: 210 40% 98%;
-    --popover: 217.2 32.6% 17.5%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
+    --background: 0 0% 7%;      /* #121212 */
+    --foreground: 0 0% 90%;     /* #E5E5E5 */
+    --card: 0 0% 11%;           /* #1C1C1C */
+    --card-foreground: 0 0% 90%;
+    --popover: 0 0% 11%;
+    --popover-foreground: 0 0% 90%;
+    --primary: 221.2 83.2% 53.3%; /* Match the blue button */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 15%;      /* #262626 */
+    --secondary-foreground: 0 0% 90%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 63%; /* #A0A0A0 */
+    --accent: 0 0% 15%;
+    --accent-foreground: 0 0% 90%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 20%;         /* #333333 */
+    --input: 0 0% 20%;
+    --ring: 221.2 83.2% 53.3%;
   }
 }
 
@@ -65,10 +79,10 @@ body {
 }
 
 .dark .glass-panel {
-  background: rgba(30, 41, 59, 0.75);
+  background: rgba(28, 28, 28, 0.75);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(51, 65, 85, 0.8);
+  border: 1px solid rgba(51, 51, 51, 0.8);
 }
 
 /* Custom Scrollbar */

@@ -19,17 +19,12 @@ export async function sendVisitThankYouEmail({
   if (!customerEmail) return;
 
   try {
-    // 1. Fetch system settings
-    const settings = await (prisma as any).systemSetting?.findMany() || [];
-    const settingsMap: Record<string, string> = {};
-    settings.forEach((s: any) => (settingsMap[s.key] = s.value));
-
-    const companyName = settingsMap.companyName || "Sales Visit Pro Inc.";
-    const smtpHost = settingsMap.smtpHost || process.env.SMTP_HOST || "smtp.mailtrap.io";
-    const smtpPort = parseInt(settingsMap.smtpPort || process.env.SMTP_PORT || "2525", 10);
-    const smtpUser = settingsMap.smtpUser || process.env.SMTP_USER || "";
-    const smtpPass = settingsMap.smtpPass || process.env.SMTP_PASS || "";
-    const smtpFrom = settingsMap.smtpFrom || process.env.SMTP_FROM || `"${companyName}" <noreply@salesvisitpro.com>`;
+    const smtpHost = "smtp.gmail.com";
+    const smtpPort = 587;
+    const smtpUser = process.env.GMAIL_USER || "";
+    const smtpPass = process.env.GMAIL_PASS || "";
+    const companyName = "Sales Visit Pro Inc."; // Default if no settings
+    const smtpFrom = `"${companyName}" <${smtpUser}>`;
 
     // 2. Fetch email template
     const template = await prisma.emailTemplate.findFirst({
@@ -70,7 +65,7 @@ Regards,
       const transporter = nodemailer.createTransport({
         host: smtpHost,
         port: smtpPort,
-        secure: smtpPort === 465,
+        secure: false,
         auth: {
           user: smtpUser,
           pass: smtpPass,
@@ -105,16 +100,12 @@ export async function sendLeadGreetingEmail({
   if (!customerEmail) return;
 
   try {
-    const settings = await (prisma as any).systemSetting?.findMany() || [];
-    const settingsMap: Record<string, string> = {};
-    settings.forEach((s: any) => (settingsMap[s.key] = s.value));
-
-    const companyName = settingsMap.companyName || "Sales Visit Pro Inc.";
-    const smtpHost = settingsMap.smtpHost || process.env.SMTP_HOST || "smtp.mailtrap.io";
-    const smtpPort = parseInt(settingsMap.smtpPort || process.env.SMTP_PORT || "2525", 10);
-    const smtpUser = settingsMap.smtpUser || process.env.SMTP_USER || "";
-    const smtpPass = settingsMap.smtpPass || process.env.SMTP_PASS || "";
-    const smtpFrom = settingsMap.smtpFrom || process.env.SMTP_FROM || `"${companyName}" <noreply@salesvisitpro.com>`;
+    const smtpHost = "smtp.gmail.com";
+    const smtpPort = 587;
+    const smtpUser = process.env.GMAIL_USER || "";
+    const smtpPass = process.env.GMAIL_PASS || "";
+    const companyName = "Sales Visit Pro Inc.";
+    const smtpFrom = `"${companyName}" <${smtpUser}>`;
 
     const subject = `Welcome to ${companyName}!`;
     const bodyTemplate = `Dear {{Customer Name}},
@@ -136,7 +127,7 @@ Best Regards,
       const transporter = nodemailer.createTransport({
         host: smtpHost,
         port: smtpPort,
-        secure: smtpPort === 465,
+        secure: false,
         auth: {
           user: smtpUser,
           pass: smtpPass,

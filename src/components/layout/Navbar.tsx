@@ -250,12 +250,12 @@ export function Navbar({ user, onMenuClick }: NavbarProps) {
         {/* Right Section: Theme Toggle, Notifications, Profile Dropdown */}
         <div className="flex items-center space-x-3">
           {/* Dark / Light Toggle */}
-          <button
+          {/* <button
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
             className="p-3 -m-1 rounded-xl text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
           >
             {theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-          </button>
+          </button> */}
 
           {/* Notifications Button & Popover */}
           <div className="relative">
@@ -315,7 +315,7 @@ export function Navbar({ user, onMenuClick }: NavbarProps) {
                   <button
                     onClick={() => {
                       setShowUserMenu(false);
-                      router.push(user?.role === "ADMIN" ? "/admin/settings" : "/employee/profile");
+                      router.push(user?.role === "ADMIN" ? "/admin/dashboard" : "/employee/profile");
                     }}
                     className="w-full flex items-center space-x-2.5 px-3 py-2 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
                   >

@@ -44,13 +44,6 @@ interface DashboardData {
     customerTypeDistribution: Array<{ name: string; value: number }>;
     employeePerformance: Array<{ name: string; visits: number }>;
   };
-  recentActivities: Array<{
-    id: string;
-    action: string;
-    description: string;
-    createdAt: string;
-    user?: { name: string; email: string };
-  }>;
 }
 
 const COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#ec4899", "#8b5cf6", "#ef4444"];
@@ -62,17 +55,15 @@ export default function AdminDashboardPage() {
   useEffect(() => {
     async function loadDashboard() {
       try {
-        const [empRes, customersRes, visitsRes, logsRes] = await Promise.all([
+        const [empRes, customersRes, visitsRes] = await Promise.all([
           fetch(`${API_BASE}/api/employees`),
           fetch(`${API_BASE}/api/customers`),
           fetch(`${API_BASE}/api/visits`),
-          fetch(`${API_BASE}/api/activity-logs`),
         ]);
 
         const employees = (await empRes.json()).data || [];
         const customers = (await customersRes.json()).data || [];
         const visits = (await visitsRes.json()).data || [];
-        const logs = (await logsRes.json()).data || [];
 
         const todayStr = new Date().toISOString().split("T")[0];
 
@@ -134,7 +125,6 @@ export default function AdminDashboardPage() {
             customerTypeDistribution,
             employeePerformance,
           },
-          recentActivities: logs.slice(0, 6),
         });
       } catch (err) {
         console.error("Dashboard data load error:", err);
