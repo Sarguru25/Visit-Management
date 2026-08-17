@@ -7,6 +7,8 @@ interface SendVisitEmailParams {
   visitDate: string;
   visitType: string;
   nextFollowupDate?: string;
+  companyId?: string;
+  companyName?: string;
 }
 
 export async function sendVisitThankYouEmail({
@@ -15,6 +17,8 @@ export async function sendVisitThankYouEmail({
   visitDate,
   visitType,
   nextFollowupDate = "N/A",
+  companyId,
+  companyName = "Sales Visit Pro Inc.",
 }: SendVisitEmailParams) {
   if (!customerEmail) return;
 
@@ -23,12 +27,16 @@ export async function sendVisitThankYouEmail({
     const smtpPort = 587;
     const smtpUser = process.env.GMAIL_USER || "";
     const smtpPass = process.env.GMAIL_PASS || "";
-    const companyName = "Sales Visit Pro Inc."; // Default if no settings
     const smtpFrom = `"${companyName}" <${smtpUser}>`;
 
-    // 2. Fetch email template
+    // 2. Fetch email template specific to the company if companyId is provided
+    const templateWhere: any = { name: { contains: "Visit" }, status: "ACTIVE" };
+    if (companyId) {
+      templateWhere.companyId = companyId;
+    }
+
     const template = await prisma.emailTemplate.findFirst({
-      where: { name: { contains: "Visit" }, status: "ACTIVE" },
+      where: templateWhere,
     });
 
     let subject = "Thank You for Meeting With Us";
@@ -46,6 +54,13 @@ Regards,
     if (template) {
       subject = template.subject;
       bodyTemplate = template.body;
+      
+      // Use senderEmail from template if available
+      if (template.senderEmail) {
+        // We can't change the actual SMTP user easily without a custom integration for each company, 
+        // but we can at least set the 'from' address label to the template's senderEmail if we want,
+        // or just use it as is.
+      }
     }
 
     // 3. Replace variables
@@ -57,6 +72,7 @@ Regards,
       .replace(/\{\{\s*Company Name\s*\}\}/gi, companyName);
 
     console.log(`✉️ Sending Visit Thank You email to: ${customerEmail}`);
+    console.log(`Company: ${companyName}`);
     console.log(`Subject: ${subject}`);
     console.log(`Body:\n${body}`);
 

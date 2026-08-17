@@ -57,10 +57,10 @@ export default function EmployeeDashboardPage() {
 
         const todayStr = new Date().toISOString().split("T")[0];
 
-        const todaysVisits = visits.filter((v: any) => v.visitDate === todayStr).length;
+        const todaysVisits = visits.filter((v: any) => v.visitDate?.startsWith(todayStr)).length;
         const pendingVisits = visits.filter((v: any) => v.status === "PENDING").length;
         const completedVisits = visits.filter((v: any) => v.status === "COMPLETED").length;
-        const todaysFollowups = visits.filter((v: any) => v.nextFollowupDate === todayStr).length;
+        const todaysFollowups = visits.filter((v: any) => v.nextFollowupDate?.startsWith(todayStr)).length;
         const totalCustomers = customers.length;
 
         const upcomingFollowups = visits
@@ -102,6 +102,15 @@ export default function EmployeeDashboardPage() {
   }
 
   const stats = data?.stats;
+
+  const formatDate = (dateStr: string) => {
+    if (!dateStr) return "";
+    return new Date(dateStr).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
 
   return (
     <div className="space-y-8">
@@ -229,7 +238,7 @@ export default function EmployeeDashboardPage() {
                   <Badge variant={v.status === "COMPLETED" ? "success" : "warning"}>
                     {v.status}
                   </Badge>
-                  <div className="text-[11px] text-slate-400 mt-1">{v.visitDate}</div>
+                  <div className="text-[11px] text-slate-400 mt-1">{formatDate(v.visitDate)}</div>
                 </div>
               </div>
             ))}
@@ -259,7 +268,7 @@ export default function EmployeeDashboardPage() {
               >
                 <div className="flex items-center justify-between text-xs font-bold text-slate-800 dark:text-slate-200">
                   <span>{f.customer?.companyName || f.customer?.name}</span>
-                  <span className="text-purple-600 dark:text-purple-400">{f.nextFollowupDate}</span>
+                  <span className="text-purple-600 dark:text-purple-400">{formatDate(f.nextFollowupDate)}</span>
                 </div>
                 <div className="text-xs text-slate-500 mt-1">
                   Contact {f.customer?.name} ({f.customer?.phone})

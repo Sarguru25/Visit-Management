@@ -3,7 +3,7 @@ import { getSessionUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { successResponse, errorResponse } from "@/lib/api";
 import { logActivity } from "@/lib/logger";
-import { sendVisitThankYouEmail, sendLeadGreetingEmail } from "@/lib/email";
+import { sendVisitThankYouEmail } from "@/lib/email";
 import { z } from "zod";
 
 const createVisitSchema = z.object({
@@ -189,15 +189,9 @@ export async function POST(req: NextRequest) {
         visitDate: newVisit.visitDate.toISOString().split("T")[0],
         visitType: newVisit.visitType.replace("_", " "),
         nextFollowupDate: newVisit.nextFollowupDate ? newVisit.nextFollowupDate.toISOString().split("T")[0] : "N/A",
+        companyId: newVisit.companyId,
+        companyName: newVisit.company.name,
       }).catch((err: any) => console.error("Email send trigger error:", err));
-    }
-    
-    // Send greeting email after visit is created (if email exists)
-    if (customer.email) {
-      sendLeadGreetingEmail({
-        customerEmail: customer.email,
-        customerName: customer.name,
-      }).catch((err: any) => console.error("Greeting email send trigger error:", err));
     }
 
     await logActivity({

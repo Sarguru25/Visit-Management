@@ -58,7 +58,7 @@ export async function PUT(
     const updatedVisit = await prisma.visit.update({
       where: { id },
       data: {
-        visitDate: body.visitDate !== undefined ? body.visitDate : visit.visitDate,
+        visitDate: body.visitDate !== undefined ? new Date(body.visitDate) : visit.visitDate,
         visitTime: body.visitTime !== undefined ? body.visitTime : visit.visitTime,
         visitType: body.visitType !== undefined ? body.visitType : visit.visitType,
         location: body.location !== undefined ? body.location : visit.location,
@@ -66,7 +66,7 @@ export async function PUT(
         longitude: body.longitude !== undefined ? body.longitude : visit.longitude,
         status: body.status !== undefined ? body.status : visit.status,
         visitReport: body.visitReport !== undefined ? body.visitReport : visit.visitReport,
-        nextFollowupDate: body.nextFollowupDate !== undefined ? body.nextFollowupDate : visit.nextFollowupDate,
+        nextFollowupDate: body.nextFollowupDate ? new Date(body.nextFollowupDate) : body.nextFollowupDate === null ? null : visit.nextFollowupDate,
         attachment: body.attachment !== undefined ? body.attachment : visit.attachment,
       },
       include: { customer: true },

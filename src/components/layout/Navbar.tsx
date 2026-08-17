@@ -262,7 +262,7 @@ export function Navbar({ user, onMenuClick }: NavbarProps) {
           </button> */}
 
           {/* Notifications Button & Popover */}
-          <div className="relative" ref={notificationRef}>
+          {/* <div className="relative" ref={notificationRef}>
             <button
               onClick={() => setShowNotifications(!showNotifications)}
               className="p-3 -m-1 rounded-xl text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors relative"
@@ -295,7 +295,7 @@ export function Navbar({ user, onMenuClick }: NavbarProps) {
                 </div>
               </div>
             )}
-          </div>
+          </div> */}
 
           {/* User Profile Menu */}
           <div className="relative" ref={userMenuRef}>
