@@ -207,18 +207,18 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    if (contact.email && newVisit.status === "COMPLETED") {
+    // if (contact.email && newVisit.status === "COMPLETED") {
       // NOTE: sendVisitThankYouEmail is just a stub imported above
-      sendVisitThankYouEmail({
-        customerEmail: contact.email,
-        customerName: contact.name,
-        visitDate: newVisit.visitDate.toISOString().split("T")[0],
-        visitType: newVisit.visitType.replace("_", " "),
-        nextFollowupDate: newVisit.nextFollowupDate ? newVisit.nextFollowupDate.toISOString().split("T")[0] : "N/A",
-        companyId: newVisit.companyId,
-        companyName: newVisit.company.name,
-      }).catch((err: any) => console.error("Email send trigger error:", err));
-    }
+      // sendVisitThankYouEmail({
+      //   customerEmail: contact.email,
+      //   customerName: contact.name,
+      //   visitDate: newVisit.visitDate.toISOString().split("T")[0],
+      //   visitType: newVisit.visitType.replace("_", " "),
+      //   nextFollowupDate: newVisit.nextFollowupDate ? newVisit.nextFollowupDate.toISOString().split("T")[0] : "N/A",
+      //   companyId: newVisit.companyId,
+      //   companyName: newVisit.company.name,
+      // }).catch((err: any) => console.error("Email send trigger error:", err));
+    // }
 
     await logActivity({
       userId: session.userId,
