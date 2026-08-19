@@ -19,6 +19,8 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { API_BASE } from "@/lib/api";
+import { ContactsTab } from "./ContactsTab";
+import { LocationsTab } from "./LocationsTab";
 
 interface LeadDetailsProps {
   leadId: string;
@@ -59,11 +61,13 @@ interface CustomerData {
     company: { name: string };
     employee: { user: { name: string } };
   }>;
+  contacts: Array<any>;
 }
 
 export function LeadDetailsClient({ leadId, role }: LeadDetailsProps) {
   const [customer, setCustomer] = useState<CustomerData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<"OVERVIEW" | "LOCATIONS" | "CONTACTS" | "VISITS">("OVERVIEW");
 
   useEffect(() => {
     async function fetchCustomer() {
@@ -164,7 +168,51 @@ export function LeadDetailsClient({ leadId, role }: LeadDetailsProps) {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="flex border-b border-slate-200 dark:border-slate-800 space-x-8 mb-6">
+        <button
+          onClick={() => setActiveTab("OVERVIEW")}
+          className={`pb-4 text-sm font-bold transition-all ${
+            activeTab === "OVERVIEW"
+              ? "border-b-2 border-blue-600 text-blue-600"
+              : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-300"
+          }`}
+        >
+          Overview
+        </button>
+        <button
+          onClick={() => setActiveTab("LOCATIONS")}
+          className={`pb-4 text-sm font-bold transition-all ${
+            activeTab === "LOCATIONS"
+              ? "border-b-2 border-blue-600 text-blue-600"
+              : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-300"
+          }`}
+        >
+          Locations
+        </button>
+        <button
+          onClick={() => setActiveTab("CONTACTS")}
+          className={`pb-4 text-sm font-bold transition-all ${
+            activeTab === "CONTACTS"
+              ? "border-b-2 border-blue-600 text-blue-600"
+              : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-300"
+          }`}
+        >
+          Contacts ({customer.contacts?.length || 0})
+        </button>
+        <button
+          onClick={() => setActiveTab("VISITS")}
+          className={`pb-4 text-sm font-bold transition-all ${
+            activeTab === "VISITS"
+              ? "border-b-2 border-blue-600 text-blue-600"
+              : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-300"
+          }`}
+        >
+          Visits ({totalVisits})
+        </button>
+      </div>
+
+      {activeTab === "OVERVIEW" && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Customer Information Card */}
         <Card className="p-6 lg:col-span-2">
           <h2 className="text-base font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
@@ -250,8 +298,17 @@ export function LeadDetailsClient({ leadId, role }: LeadDetailsProps) {
           </div>
         </Card>
       </div>
+      )}
 
-      {/* Visit Timeline Section */}
+      {activeTab === "LOCATIONS" && (
+        <LocationsTab customerId={customer.id} role={role} />
+      )}
+
+      {activeTab === "CONTACTS" && (
+        <ContactsTab customerId={customer.id} initialContacts={customer.contacts || []} role={role} />
+      )}
+
+      {activeTab === "VISITS" && (
       <Card className="p-6">
         <h2 className="text-base font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
           <Calendar className="w-5 h-5 text-purple-500" /> Visit History & Interactive Timeline
@@ -331,6 +388,7 @@ export function LeadDetailsClient({ leadId, role }: LeadDetailsProps) {
           )}
         </div>
       </Card>
+      )}
     </div>
   );
 }

@@ -96,7 +96,54 @@ model Customer {
   visits      Visit[]
   sales       Sale[]
   followUps   FollowUp[]
+  contacts    Contact[]
+  locations   Location[]
 }
+
+model Location {
+  id          String   @id @default(uuid())
+  customerId  String
+  customer    Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  name        String
+  code        String?
+  type        String?
+  address     String?
+  city        String?
+  state       String?
+  country     String?
+  pincode     String?
+  phone       String?
+  email       String?
+  status      String   @default("ACTIVE") // ACTIVE, INACTIVE
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  contacts    Contact[]
+  visits      Visit[]
+}
+
+model Contact {
+  id          String   @id @default(uuid())
+  customerId  String
+  customer    Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  locationId  String?
+  location    Location? @relation(fields: [locationId], references: [id], onDelete: SetNull)
+  name        String
+  designation String?
+  department  String?
+  mobile      String?
+  phone       String?
+  email       String?
+  notes       String?
+  isPrimary   Boolean  @default(false)
+  status      String   @default("ACTIVE") // ACTIVE, INACTIVE
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  visits      Visit[]
+}
+
+
 
 model CustomerAssignment {
   id             String   @id @default(uuid())
@@ -118,6 +165,10 @@ model Visit {
   id               String    @id @default(uuid())
   customerId       String
   customer         Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  locationId       String?
+  customerLocation Location? @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  contactId        String?
+  contact          Contact?  @relation(fields: [contactId], references: [id], onDelete: Cascade)
   companyId        String
   company          Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
   employeeId       String

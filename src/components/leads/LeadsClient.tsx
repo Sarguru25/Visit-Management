@@ -10,7 +10,14 @@ import {
   Phone,
   Mail,
   AlertCircle,
-  Users
+  Users,
+  Building2,
+  MapPin,
+  UserPlus,
+  Briefcase,
+  UserCheck,
+  Building,
+  Sparkles
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -84,6 +91,7 @@ export function LeadsClient({ role }: CustomersClientProps) {
     pincode: "",
     industry: "",
     assignments: [{ companyId: "", employeeId: "" }],
+    locations: [] as { name: string, type: string, contacts: { name: string, designation: string, department: string, mobile: string, email: string }[] }[]
   };
 
   const [formData, setFormData] = useState(initialFormState);
@@ -101,6 +109,39 @@ export function LeadsClient({ role }: CustomersClientProps) {
   const removeAssignment = (index: number) => {
     const newAssignments = formData.assignments.filter((_, i) => i !== index);
     setFormData({ ...formData, assignments: newAssignments });
+  };
+
+  const addLocation = () => {
+    setFormData({ ...formData, locations: [...formData.locations, { name: "", type: "", contacts: [] }] });
+  };
+
+  const updateLocation = (index: number, field: string, value: string) => {
+    const newLocs = [...formData.locations];
+    newLocs[index] = { ...newLocs[index], [field]: value };
+    setFormData({ ...formData, locations: newLocs });
+  };
+
+  const removeLocation = (index: number) => {
+    const newLocs = formData.locations.filter((_, i) => i !== index);
+    setFormData({ ...formData, locations: newLocs });
+  };
+
+  const addContact = (locIndex: number) => {
+    const newLocs = [...formData.locations];
+    newLocs[locIndex].contacts.push({ name: "", designation: "", department: "", mobile: "", email: "" });
+    setFormData({ ...formData, locations: newLocs });
+  };
+
+  const updateContact = (locIndex: number, contactIndex: number, field: string, value: string) => {
+    const newLocs = [...formData.locations];
+    newLocs[locIndex].contacts[contactIndex] = { ...newLocs[locIndex].contacts[contactIndex], [field]: value };
+    setFormData({ ...formData, locations: newLocs });
+  };
+
+  const removeContact = (locIndex: number, contactIndex: number) => {
+    const newLocs = [...formData.locations];
+    newLocs[locIndex].contacts = newLocs[locIndex].contacts.filter((_, i) => i !== contactIndex);
+    setFormData({ ...formData, locations: newLocs });
   };
 
   const loadCustomers = async () => {
@@ -423,227 +464,476 @@ export function LeadsClient({ role }: CustomersClientProps) {
         </div>
       </Card>
 
-      <Dialog isOpen={isCreateOpen} onClose={() => setIsCreateOpen(false)} title="Add Customer & Assign">
-        <form onSubmit={handleCreate} className="space-y-4 text-xs">
+      <Dialog isOpen={isCreateOpen} onClose={() => setIsCreateOpen(false)} title="Add Customer & Assign" maxWidth="2xl">
+        <form onSubmit={handleCreate} className="space-y-6 max-h-[80vh] overflow-y-auto pr-1 text-slate-800 dark:text-slate-100">
           {errorMsg && (
-            <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-500 text-xs font-semibold flex items-center gap-2">
-              <AlertCircle className="w-4 h-4" /> {errorMsg}
+            <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs font-semibold flex items-center gap-2.5">
+              <AlertCircle className="w-4 h-4 shrink-0" /> {errorMsg}
             </div>
           )}
 
-          <div className="space-y-3 bg-slate-50 dark:bg-slate-800/50 p-3 rounded-xl border border-slate-200 dark:border-slate-700">
-            <div className="flex items-center justify-between">
-              <label className="block font-bold text-slate-800 dark:text-slate-200">Company Assignments</label>
-              <button type="button" onClick={addAssignment} className="text-xs flex items-center gap-1 text-blue-600 dark:text-blue-400 font-bold hover:underline">
-                <Plus className="w-3 h-3" /> Add Company
+          {/* Section 1: Company Assignments */}
+          <div className="bg-slate-50/80 dark:bg-slate-800/40 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-xl bg-blue-100 text-blue-600 dark:bg-blue-950/80 dark:text-blue-400">
+                  <Building2 className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">1. Sales Company Assignment</h4>
+                  <p className="text-[11px] text-slate-500">Assign this customer to your internal sales entities & reps</p>
+                </div>
+              </div>
+              <button 
+                type="button" 
+                onClick={addAssignment} 
+                className="text-xs flex items-center justify-center gap-1.5 px-3 py-2 sm:py-1.5 rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-900/40 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/60 font-semibold transition-colors w-full sm:w-auto"
+              >
+                <Plus className="w-3.5 h-3.5" /> Add Company
               </button>
             </div>
             
-            {formData.assignments.map((assignment, idx) => (
-              <div key={idx} className="flex flex-col sm:flex-row gap-3 items-end bg-white dark:bg-slate-900 p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm">
-                <div className="flex-1 w-full">
-                  <label className="block font-semibold mb-1 text-[10px] text-slate-500 uppercase tracking-wider">Company to Assign To *</label>
-                  <select required value={assignment.companyId} onChange={e => updateAssignment(idx, 'companyId', e.target.value)} className="w-full p-2.5 rounded-xl border bg-slate-100 dark:bg-slate-800 dark:border-slate-700">
-                    <option value="">-- Choose Company --</option>
-                    {companies.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                  </select>
+            <div className="space-y-3">
+              {formData.assignments.map((assignment, idx) => (
+                <div key={idx} className="flex flex-col sm:flex-row gap-3 sm:items-end bg-white dark:bg-slate-900 p-3 pt-8 sm:pt-3 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm relative">
+                  <div className="flex-1 w-full space-y-1">
+                    <label className="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Company *</label>
+                    <select 
+                      required 
+                      value={assignment.companyId} 
+                      onChange={e => updateAssignment(idx, 'companyId', e.target.value)} 
+                      className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800 text-xs focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
+                    >
+                      <option value="">Select Company...</option>
+                      {companies.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                    </select>
+                  </div>
+                  {role === "ADMIN" && (
+                    <div className="flex-1 w-full space-y-1">
+                      <label className="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Assigned Sales Rep *</label>
+                      <select 
+                        required 
+                        value={assignment.employeeId} 
+                        onChange={e => updateAssignment(idx, 'employeeId', e.target.value)} 
+                        className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800 text-xs focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
+                      >
+                        <option value="">Select Employee...</option>
+                        {employees.map(e => <option key={e.id} value={e.id}>{e.user.name}</option>)}
+                      </select>
+                    </div>
+                  )}
+                  {formData.assignments.length > 1 && (
+                    <button 
+                      type="button" 
+                      onClick={() => removeAssignment(idx)} 
+                      className="p-2 sm:p-2.5 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-400 dark:hover:bg-rose-900/60 transition-colors absolute top-2 right-2 sm:static sm:top-auto sm:right-auto"
+                      title="Remove Assignment"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
-                {role === "ADMIN" && (
-                <div className="flex-1 w-full">
-                  <label className="block font-semibold mb-1 text-[10px] text-slate-500 uppercase tracking-wider">Assigned Rep *</label>
-                  <select required value={assignment.employeeId} onChange={e => updateAssignment(idx, 'employeeId', e.target.value)} className="w-full p-2.5 rounded-xl border bg-slate-100 dark:bg-slate-800 dark:border-slate-700">
-                    <option value="">-- Choose Employee --</option>
-                    {employees.map(e => <option key={e.id} value={e.id}>{e.user.name}</option>)}
-                  </select>
-                </div>
-                )}
-                {formData.assignments.length > 1 && (
-                  <button type="button" onClick={() => removeAssignment(idx)} className="p-2.5 mb-0.5 rounded-xl bg-rose-100 text-rose-600 hover:bg-rose-200 transition-colors">
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                )}
+              ))}
+            </div>
+          </div>
+
+          {/* Section 2: Basic Customer Details */}
+          <div className="bg-slate-50/80 dark:bg-slate-800/40 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 space-y-4">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 rounded-xl bg-purple-100 text-purple-600 dark:bg-purple-950/80 dark:text-purple-400">
+                <UserCheck className="w-4 h-4" />
               </div>
-            ))}
+              <div>
+                <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">2. Customer Information</h4>
+                <p className="text-[11px] text-slate-500">Core business profile and contact details</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+              <div className="space-y-1">
+                <label className="block font-semibold text-slate-700 dark:text-slate-300">Customer Full Name *</label>
+                <input 
+                  type="text" 
+                  required 
+                  placeholder="e.g. Acme Corporation" 
+                  value={formData.name} 
+                  onChange={e => setFormData({...formData, name: e.target.value})} 
+                  className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none transition-all" 
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="block font-semibold text-slate-700 dark:text-slate-300">Primary Phone Number *</label>
+                <input 
+                  type="text" 
+                  required 
+                  placeholder="e.g. +91 98765 43210" 
+                  value={formData.phone} 
+                  onChange={e => setFormData({...formData, phone: e.target.value})} 
+                  className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none transition-all" 
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="block font-semibold text-slate-700 dark:text-slate-300">Customer Segment</label>
+                <select 
+                  value={formData.companyName} 
+                  onChange={e => setFormData({...formData, companyName: e.target.value})} 
+                  className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none transition-all"
+                >
+                  <option value="">Select Segment...</option>
+                  <option value="Water & Waste Water">Water & Waste Water</option>
+                  <option value="Oil & Gas">Oil & Gas</option>
+                  <option value="Energy & Power">Energy & Power</option>
+                  <option value="Marine & Offshore">Marine & Offshore</option>
+                  <option value="Pulp & Paper">Pulp & Paper</option>
+                  <option value="Chemical">Chemical</option>
+                  <option value="Food & Pharma">Food & Pharma</option>
+                  <option value="Fire Fighting">Fire Fighting</option>
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <label className="block font-semibold text-slate-700 dark:text-slate-300">Customer Type</label>
+                <select 
+                  value={formData.industry} 
+                  onChange={e => setFormData({...formData, industry: e.target.value})} 
+                  className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none transition-all"
+                >
+                  <option value="">Select Type...</option>
+                  <option value="End User">End User</option>
+                  <option value="OEM">OEM</option>
+                  <option value="Manufacturer">Manufacturer</option>
+                </select>
+              </div>
+            </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block font-semibold mb-1">Customer Full Name *</label>
-              <input type="text" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full p-2.5 rounded-xl border bg-transparent dark:border-slate-700" />
+          {/* Section 3: Locations & Contacts */}
+          <div className="bg-slate-50/80 dark:bg-slate-800/40 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-xl bg-emerald-100 text-emerald-600 dark:bg-emerald-950/80 dark:text-emerald-400">
+                  <MapPin className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">3. Locations & Key Contacts</h4>
+                  <p className="text-[11px] text-slate-500">Optionally pre-fill branches & key points of contact</p>
+                </div>
+              </div>
+              <button 
+                type="button" 
+                onClick={addLocation} 
+                className="text-xs flex items-center justify-center gap-1.5 px-3 py-2 sm:py-1.5 rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 font-semibold transition-colors w-full sm:w-auto"
+              >
+                <Plus className="w-3.5 h-3.5" /> Add Location
+              </button>
             </div>
-            <div>
-              <label className="block font-semibold mb-1">Phone Number *</label>
-              <input type="text" required value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} className="w-full p-2.5 rounded-xl border bg-transparent dark:border-slate-700" />
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block font-semibold mb-1">Customer Segment</label>
-              <select value={formData.companyName} onChange={e => setFormData({...formData, companyName: e.target.value})} className="w-full p-2.5 rounded-xl border bg-slate-50 dark:bg-slate-800 dark:border-slate-700">
-                <option value="">Select Segment...</option>
-                <option value="Water & Waste Water">Water & Waste Water</option>
-                <option value="Oil & Gas">Oil & Gas</option>
-                <option value="Energy & Power">Energy & Power</option>
-                <option value="Marine & Offshore">Marine & Offshore</option>
-                <option value="Pulp & Paper">Pulp & Paper</option>
-                <option value="Chemical">Chemical</option>
-                <option value="Food & Pharma">Food & Pharma</option>
-                <option value="Fire Fighting">Fire Fighting</option>
-              </select>
-            </div>
-            <div>
-              <label className="block font-semibold mb-1">Email Address</label>
-              <input type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} className="w-full p-2.5 rounded-xl border bg-transparent dark:border-slate-700" />
-            </div>
+
+            {formData.locations.length === 0 ? (
+              <div className="text-center py-6 border border-dashed border-slate-200 dark:border-slate-700/60 rounded-xl">
+                <p className="text-xs text-slate-400">No locations added yet. You can add branches or plant locations now or later.</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {formData.locations.map((loc, locIdx) => (
+                  <div key={locIdx} className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4 relative">
+                    <div className="flex items-center justify-between pr-8 border-b border-slate-100 dark:border-slate-800 pb-3">
+                      <div className="flex items-center gap-2">
+                        <span className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 text-xs font-bold flex items-center justify-center">
+                          {locIdx + 1}
+                        </span>
+                        <span className="font-bold text-xs text-slate-900 dark:text-white">Branch / Site Location</span>
+                      </div>
+                      <button 
+                        type="button" 
+                        onClick={() => removeLocation(locIdx)} 
+                        className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                        title="Remove Location"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                      <div className="space-y-1">
+                        <label className="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Location Name *</label>
+                        <input 
+                          type="text" 
+                          required 
+                          placeholder="e.g. Head Office / Chennai Refinery" 
+                          value={loc.name} 
+                          onChange={e => updateLocation(locIdx, 'name', e.target.value)} 
+                          className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all" 
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Location Type</label>
+                        <select 
+                          value={loc.type} 
+                          onChange={e => updateLocation(locIdx, 'type', e.target.value)} 
+                          className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
+                        >
+                          <option value="">Select Type...</option>
+                          <option value="Plant">Plant</option>
+                          <option value="Factory">Factory</option>
+                          <option value="Branch">Branch</option>
+                          <option value="Office">Office</option>
+                          <option value="Head Office">Head Office</option>
+                          <option value="Other">Other</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Nested Contacts */}
+                    <div className="space-y-3 pt-2">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                        <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                          <Users className="w-3.5 h-3.5 text-blue-500" /> Contacts at {loc.name || `Location ${locIdx + 1}`}
+                        </span>
+                        <button 
+                          type="button" 
+                          onClick={() => addContact(locIdx)} 
+                          className="text-[11px] flex items-center justify-center gap-1 px-3 py-1.5 sm:px-2.5 sm:py-1 rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400 hover:bg-blue-100 font-semibold transition-colors w-full sm:w-auto"
+                        >
+                          <Plus className="w-3 h-3" /> Add Contact
+                        </button>
+                      </div>
+
+                      {loc.contacts.map((contact, contactIdx) => (
+                        <div key={contactIdx} className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/60 space-y-2.5 relative">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Contact #{contactIdx + 1}</span>
+                            <button 
+                              type="button" 
+                              onClick={() => removeContact(locIdx, contactIdx)} 
+                              className="text-rose-500 hover:text-rose-700 p-1 text-xs font-semibold"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                          
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                            <input 
+                              type="text" 
+                              required 
+                              placeholder="Full Name *" 
+                              value={contact.name} 
+                              onChange={e => updateContact(locIdx, contactIdx, 'name', e.target.value)} 
+                              className="p-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 outline-none focus:ring-1 focus:ring-blue-500" 
+                            />
+                            <input 
+                              type="text" 
+                              placeholder="Designation (e.g. Manager)" 
+                              value={contact.designation} 
+                              onChange={e => updateContact(locIdx, contactIdx, 'designation', e.target.value)} 
+                              className="p-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 outline-none focus:ring-1 focus:ring-blue-500" 
+                            />
+                            <input 
+                              type="text" 
+                              placeholder="Department (e.g. Maintenance)" 
+                              value={contact.department} 
+                              onChange={e => updateContact(locIdx, contactIdx, 'department', e.target.value)} 
+                              className="p-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 outline-none focus:ring-1 focus:ring-blue-500" 
+                            />
+                            <input 
+                              type="text" 
+                              placeholder="Mobile Number" 
+                              value={contact.mobile} 
+                              onChange={e => updateContact(locIdx, contactIdx, 'mobile', e.target.value)} 
+                              className="p-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 outline-none focus:ring-1 focus:ring-blue-500" 
+                            />
+                            <input 
+                              type="email" 
+                              placeholder="Email Address" 
+                              value={contact.email} 
+                              onChange={e => updateContact(locIdx, contactIdx, 'email', e.target.value)} 
+                              className="p-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 outline-none focus:ring-1 focus:ring-blue-500 sm:col-span-2" 
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
-          <div>
-            <label className="block font-semibold mb-1">Street Address</label>
-            <input type="text" value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} className="w-full p-2.5 rounded-xl border bg-transparent dark:border-slate-700" placeholder="123 Business Rd" />
-          </div>
-
-          <div className="grid grid-cols-3 gap-3">
-            <div>
-              <label className="block font-semibold mb-1">City</label>
-              <input type="text" value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})} className="w-full p-2.5 rounded-xl border bg-transparent dark:border-slate-700" />
-            </div>
-            <div>
-              <label className="block font-semibold mb-1">State</label>
-              <input type="text" value={formData.state} onChange={e => setFormData({...formData, state: e.target.value})} className="w-full p-2.5 rounded-xl border bg-transparent dark:border-slate-700" />
-            </div>
-            <div>
-              <label className="block font-semibold mb-1">PIN Code</label>
-              <input type="text" value={formData.pincode} onChange={e => setFormData({...formData, pincode: e.target.value})} className="w-full p-2.5 rounded-xl border bg-transparent dark:border-slate-700" />
-            </div>
-          </div>
-
-          <div>
-            <label className="block font-semibold mb-1">Customer Type</label>
-            <select value={formData.industry} onChange={e => setFormData({...formData, industry: e.target.value})} className="w-full p-2.5 rounded-xl border bg-slate-50 dark:bg-slate-800 dark:border-slate-700">
-              <option value="">Select Type...</option>
-              <option value="End User">End User</option>
-              <option value="OEM">OEM</option>
-              <option value="Manufacturer">Manufacturer</option>
-            </select>
-          </div>
-
-          <div className="flex justify-end space-x-3 pt-4 border-t border-slate-200 dark:border-slate-800">
-            <button type="button" onClick={() => setIsCreateOpen(false)} className="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 font-bold">Cancel</button>
-            <button type="submit" disabled={submitting} className="px-4 py-2 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-500 disabled:opacity-50">
-              {submitting ? "Saving..." : "Save Customer"}
+          <div className="flex items-center justify-end space-x-3 pt-4 border-t border-slate-200 dark:border-slate-800">
+            <button 
+              type="button" 
+              onClick={() => setIsCreateOpen(false)} 
+              className="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 font-bold text-xs text-slate-700 dark:text-slate-200 transition-colors"
+            >
+              Cancel
+            </button>
+            <button 
+              type="submit" 
+              disabled={submitting} 
+              className="px-6 py-2.5 rounded-xl bg-blue-600 text-white font-bold text-xs hover:bg-blue-500 shadow-md shadow-blue-500/20 active:scale-[0.98] disabled:opacity-50 transition-all"
+            >
+              {submitting ? "Saving Customer..." : "Save Customer"}
             </button>
           </div>
         </form>
       </Dialog>
 
-      <Dialog isOpen={isEditOpen} onClose={() => setIsEditOpen(false)} title="Edit Customer Details">
-        <form onSubmit={handleUpdate} className="space-y-4 text-xs">
+      <Dialog isOpen={isEditOpen} onClose={() => setIsEditOpen(false)} title="Edit Customer Details" maxWidth="xl">
+        <form onSubmit={handleUpdate} className="space-y-5 max-h-[80vh] overflow-y-auto pr-1 text-slate-800 dark:text-slate-100">
           {errorMsg && (
-            <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-500 text-xs font-semibold flex items-center gap-2">
-              <AlertCircle className="w-4 h-4" /> {errorMsg}
+            <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs font-semibold flex items-center gap-2.5">
+              <AlertCircle className="w-4 h-4 shrink-0" /> {errorMsg}
             </div>
           )}
 
-          <div className="space-y-3 bg-slate-50 dark:bg-slate-800/50 p-3 rounded-xl border border-slate-200 dark:border-slate-700">
+          {/* Section 1: Company Assignments */}
+          <div className="bg-slate-50/80 dark:bg-slate-800/40 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 space-y-4">
             <div className="flex items-center justify-between">
-              <label className="block font-bold text-slate-800 dark:text-slate-200">Company Assignments</label>
-              <button type="button" onClick={addAssignment} className="text-xs flex items-center gap-1 text-blue-600 dark:text-blue-400 font-bold hover:underline">
-                <Plus className="w-3 h-3" /> Add Company
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-xl bg-blue-100 text-blue-600 dark:bg-blue-950/80 dark:text-blue-400">
+                  <Building2 className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">Sales Company Assignments</h4>
+                  <p className="text-[11px] text-slate-500">Manage internal sales entity associations</p>
+                </div>
+              </div>
+              <button 
+                type="button" 
+                onClick={addAssignment} 
+                className="text-xs flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-900/40 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/60 font-semibold transition-colors"
+              >
+                <Plus className="w-3.5 h-3.5" /> Add Company
               </button>
             </div>
             
-            {formData.assignments.map((assignment, idx) => (
-              <div key={idx} className="flex flex-col sm:flex-row gap-3 items-end bg-white dark:bg-slate-900 p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm">
-                <div className="flex-1 w-full">
-                  <label className="block font-semibold mb-1 text-[10px] text-slate-500 uppercase tracking-wider">Company to Assign To *</label>
-                  <select required value={assignment.companyId} onChange={e => updateAssignment(idx, 'companyId', e.target.value)} className="w-full p-2.5 rounded-xl border bg-slate-100 dark:bg-slate-800 dark:border-slate-700">
-                    <option value="">-- Choose Company --</option>
-                    {companies.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                  </select>
+            <div className="space-y-3">
+              {formData.assignments.map((assignment, idx) => (
+                <div key={idx} className="flex flex-col sm:flex-row gap-3 items-end bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                  <div className="flex-1 w-full space-y-1">
+                    <label className="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Company *</label>
+                    <select 
+                      required 
+                      value={assignment.companyId} 
+                      onChange={e => updateAssignment(idx, 'companyId', e.target.value)} 
+                      className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800 text-xs focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
+                    >
+                      <option value="">Select Company...</option>
+                      {companies.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                    </select>
+                  </div>
+                  {role === "ADMIN" && (
+                    <div className="flex-1 w-full space-y-1">
+                      <label className="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Assigned Sales Rep *</label>
+                      <select 
+                        required 
+                        value={assignment.employeeId} 
+                        onChange={e => updateAssignment(idx, 'employeeId', e.target.value)} 
+                        className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800 text-xs focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
+                      >
+                        <option value="">Select Employee...</option>
+                        {employees.map(e => <option key={e.id} value={e.id}>{e.user.name}</option>)}
+                      </select>
+                    </div>
+                  )}
+                  {formData.assignments.length > 1 && (
+                    <button 
+                      type="button" 
+                      onClick={() => removeAssignment(idx)} 
+                      className="p-2.5 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-400 transition-colors"
+                      title="Remove Assignment"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
-                {role === "ADMIN" && (
-                <div className="flex-1 w-full">
-                  <label className="block font-semibold mb-1 text-[10px] text-slate-500 uppercase tracking-wider">Assigned Rep *</label>
-                  <select required value={assignment.employeeId} onChange={e => updateAssignment(idx, 'employeeId', e.target.value)} className="w-full p-2.5 rounded-xl border bg-slate-100 dark:bg-slate-800 dark:border-slate-700">
-                    <option value="">-- Choose Employee --</option>
-                    {employees.map(e => <option key={e.id} value={e.id}>{e.user.name}</option>)}
-                  </select>
-                </div>
-                )}
-                {formData.assignments.length > 1 && (
-                  <button type="button" onClick={() => removeAssignment(idx)} className="p-2.5 mb-0.5 rounded-xl bg-rose-100 text-rose-600 hover:bg-rose-200 transition-colors">
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                )}
+              ))}
+            </div>
+          </div>
+
+          {/* Section 2: Basic Details */}
+          <div className="bg-slate-50/80 dark:bg-slate-800/40 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 space-y-4">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 rounded-xl bg-purple-100 text-purple-600 dark:bg-purple-950/80 dark:text-purple-400">
+                <UserCheck className="w-4 h-4" />
               </div>
-            ))}
+              <div>
+                <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">Customer Profile Details</h4>
+                <p className="text-[11px] text-slate-500">Update general business identity</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+              <div className="space-y-1">
+                <label className="block font-semibold text-slate-700 dark:text-slate-300">Customer Full Name *</label>
+                <input 
+                  type="text" 
+                  required 
+                  value={formData.name} 
+                  onChange={e => setFormData({...formData, name: e.target.value})} 
+                  className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none transition-all" 
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="block font-semibold text-slate-700 dark:text-slate-300">Primary Phone Number *</label>
+                <input 
+                  type="text" 
+                  required 
+                  value={formData.phone} 
+                  onChange={e => setFormData({...formData, phone: e.target.value})} 
+                  className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none transition-all" 
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="block font-semibold text-slate-700 dark:text-slate-300">Customer Segment</label>
+                <select 
+                  value={formData.companyName} 
+                  onChange={e => setFormData({...formData, companyName: e.target.value})} 
+                  className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none transition-all"
+                >
+                  <option value="">Select Segment...</option>
+                  <option value="Water & Waste Water">Water & Waste Water</option>
+                  <option value="Oil & Gas">Oil & Gas</option>
+                  <option value="Energy & Power">Energy & Power</option>
+                  <option value="Marine & Offshore">Marine & Offshore</option>
+                  <option value="Pulp & Paper">Pulp & Paper</option>
+                  <option value="Chemical">Chemical</option>
+                  <option value="Food & Pharma">Food & Pharma</option>
+                  <option value="Fire Fighting">Fire Fighting</option>
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <label className="block font-semibold text-slate-700 dark:text-slate-300">Customer Type</label>
+                <select 
+                  value={formData.industry} 
+                  onChange={e => setFormData({...formData, industry: e.target.value})} 
+                  className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none transition-all"
+                >
+                  <option value="">Select Type...</option>
+                  <option value="End User">End User</option>
+                  <option value="OEM">OEM</option>
+                  <option value="Manufacturer">Manufacturer</option>
+                </select>
+              </div>
+            </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block font-semibold mb-1">Customer Full Name *</label>
-              <input type="text" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full p-2.5 rounded-xl border bg-transparent dark:border-slate-700" />
-            </div>
-            <div>
-              <label className="block font-semibold mb-1">Phone Number *</label>
-              <input type="text" required value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} className="w-full p-2.5 rounded-xl border bg-transparent dark:border-slate-700" />
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block font-semibold mb-1">Customer Segment</label>
-              <select value={formData.companyName} onChange={e => setFormData({...formData, companyName: e.target.value})} className="w-full p-2.5 rounded-xl border bg-slate-50 dark:bg-slate-800 dark:border-slate-700">
-                <option value="">Select Segment...</option>
-                <option value="Water & Waste Water">Water & Waste Water</option>
-                <option value="Oil & Gas">Oil & Gas</option>
-                <option value="Energy & Power">Energy & Power</option>
-                <option value="Marine & Offshore">Marine & Offshore</option>
-                <option value="Pulp & Paper">Pulp & Paper</option>
-                <option value="Chemical">Chemical</option>
-                <option value="Food & Pharma">Food & Pharma</option>
-                <option value="Fire Fighting">Fire Fighting</option>
-              </select>
-            </div>
-            <div>
-              <label className="block font-semibold mb-1">Email Address</label>
-              <input type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} className="w-full p-2.5 rounded-xl border bg-transparent dark:border-slate-700" />
-            </div>
-          </div>
-
-          <div>
-            <label className="block font-semibold mb-1">Street Address</label>
-            <input type="text" value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} className="w-full p-2.5 rounded-xl border bg-transparent dark:border-slate-700" />
-          </div>
-
-          <div className="grid grid-cols-3 gap-3">
-            <div>
-              <label className="block font-semibold mb-1">City</label>
-              <input type="text" value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})} className="w-full p-2.5 rounded-xl border bg-transparent dark:border-slate-700" />
-            </div>
-            <div>
-              <label className="block font-semibold mb-1">State</label>
-              <input type="text" value={formData.state} onChange={e => setFormData({...formData, state: e.target.value})} className="w-full p-2.5 rounded-xl border bg-transparent dark:border-slate-700" />
-            </div>
-            <div>
-              <label className="block font-semibold mb-1">PIN Code</label>
-              <input type="text" value={formData.pincode} onChange={e => setFormData({...formData, pincode: e.target.value})} className="w-full p-2.5 rounded-xl border bg-transparent dark:border-slate-700" />
-            </div>
-          </div>
-
-          <div>
-            <label className="block font-semibold mb-1">Customer Type</label>
-            <select value={formData.industry} onChange={e => setFormData({...formData, industry: e.target.value})} className="w-full p-2.5 rounded-xl border bg-slate-50 dark:bg-slate-800 dark:border-slate-700">
-              <option value="">Select Type...</option>
-              <option value="End User">End User</option>
-              <option value="OEM">OEM</option>
-              <option value="Manufacturer">Manufacturer</option>
-            </select>
-          </div>
-
-          <div className="flex justify-end space-x-3 pt-4 border-t border-slate-200 dark:border-slate-800">
-            <button type="button" onClick={() => setIsEditOpen(false)} className="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 font-bold">Cancel</button>
-            <button type="submit" disabled={submitting} className="px-4 py-2 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-500 disabled:opacity-50">
-              {submitting ? "Updating..." : "Update Details"}
+          <div className="flex items-center justify-end space-x-3 pt-4 border-t border-slate-200 dark:border-slate-800">
+            <button 
+              type="button" 
+              onClick={() => setIsEditOpen(false)} 
+              className="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 font-bold text-xs text-slate-700 dark:text-slate-200 transition-colors"
+            >
+              Cancel
+            </button>
+            <button 
+              type="submit" 
+              disabled={submitting} 
+              className="px-6 py-2.5 rounded-xl bg-blue-600 text-white font-bold text-xs hover:bg-blue-500 shadow-md shadow-blue-500/20 active:scale-[0.98] disabled:opacity-50 transition-all"
+            >
+              {submitting ? "Updating..." : "Update Customer"}
             </button>
           </div>
         </form>

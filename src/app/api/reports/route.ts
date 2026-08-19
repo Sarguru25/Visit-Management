@@ -6,8 +6,8 @@ import { successResponse, errorResponse } from "@/lib/api";
 export async function GET(req: NextRequest) {
   try {
     const session = await getSessionUser();
-    if (!session || session.role !== "ADMIN") {
-      return errorResponse("Forbidden: Admin access required", 403);
+    if (!session) {
+      return errorResponse("Unauthorized", 401);
     }
 
     const { searchParams } = new URL(req.url);

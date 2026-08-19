@@ -45,6 +45,12 @@ export async function GET(
         },
         followUps: {
           orderBy: { date: "asc" }
+        },
+        contacts: {
+          orderBy: { createdAt: "desc" },
+          include: {
+            location: true
+          }
         }
       },
     });

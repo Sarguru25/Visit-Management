@@ -18,6 +18,8 @@ export async function GET(
       where: { id },
       include: {
         customer: true,
+        contact: true,
+        customerLocation: true,
         employee: {
           include: { user: { select: { name: true, email: true, phone: true } } },
         },
@@ -58,6 +60,8 @@ export async function PUT(
     const updatedVisit = await prisma.visit.update({
       where: { id },
       data: {
+        locationId: body.locationId !== undefined ? body.locationId : visit.locationId,
+        contactId: body.contactId !== undefined ? body.contactId : visit.contactId,
         visitDate: body.visitDate !== undefined ? new Date(body.visitDate) : visit.visitDate,
         visitTime: body.visitTime !== undefined ? body.visitTime : visit.visitTime,
         visitType: body.visitType !== undefined ? body.visitType : visit.visitType,
@@ -69,7 +73,7 @@ export async function PUT(
         nextFollowupDate: body.nextFollowupDate ? new Date(body.nextFollowupDate) : body.nextFollowupDate === null ? null : visit.nextFollowupDate,
         attachment: body.attachment !== undefined ? body.attachment : visit.attachment,
       },
-      include: { customer: true },
+      include: { customer: true, contact: true, customerLocation: true },
     });
 
     await logActivity({

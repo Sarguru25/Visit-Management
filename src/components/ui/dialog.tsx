@@ -54,9 +54,9 @@ export function Dialog({
 
       {/* Modal Container */}
       <div
-        className={`relative w-full ${maxWidthClasses[maxWidth]} rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 shadow-2xl transition-all z-10 my-8 animate-in zoom-in-95 duration-150`}
+        className={`relative w-full ${maxWidthClasses[maxWidth]} max-h-[calc(100vh-2rem)] sm:max-h-[calc(100vh-4rem)] flex flex-col rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl transition-all z-10 animate-in zoom-in-95 duration-150`}
       >
-        <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
+        <div className="flex items-start justify-between p-6 pb-4 border-b border-slate-100 dark:border-slate-800 shrink-0">
           <div>
             <h2 className="text-xl font-bold text-slate-900 dark:text-white">{title}</h2>
             {description && (
@@ -65,12 +65,12 @@ export function Dialog({
           </div>
           <button
             onClick={onClose}
-            className="rounded-full p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 dark:hover:text-slate-200 transition-colors"
+            className="rounded-full p-1.5 ml-4 text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 dark:hover:text-slate-200 transition-colors shrink-0"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
-        <div className="mt-4">{children}</div>
+        <div className="p-6 pt-4 overflow-y-auto">{children}</div>
       </div>
     </div>
   );

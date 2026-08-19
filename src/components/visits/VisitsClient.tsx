@@ -1,6 +1,6 @@
 "use client";
 import { API_BASE } from "@/lib/api";
-
+import { useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import {
   MapPin,
@@ -40,6 +40,8 @@ interface VisitItem {
   visitDate: string;
   visitTime: string | null;
   visitType: string;
+  locationId: string | null;
+  customerLocation?: { id: string; name: string } | null;
   location: string | null;
   latitude: number | null;
   longitude: number | null;
@@ -62,6 +64,11 @@ interface VisitItem {
   employee: {
     user: { name: string; email: string };
   };
+  contact?: {
+    id: string;
+    name: string;
+    designation: string | null;
+  };
 }
 
 interface VisitsClientProps {
@@ -69,9 +76,14 @@ interface VisitsClientProps {
 }
 
 export function VisitsClient({ role }: VisitsClientProps) {
+  const searchParams = useSearchParams();
+  const initCustomerId = searchParams?.get("customerId") || "";
+  const initContactId = searchParams?.get("contactId") || "";
+
   const [visits, setVisits] = useState<VisitItem[]>([]);
   const [customers, setCustomers] = useState<CustomerOption[]>([]);
   const [companies, setCompanies] = useState<Company[]>([]);
+  const [contacts, setContacts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
@@ -93,6 +105,8 @@ export function VisitsClient({ role }: VisitsClientProps) {
 
   const initialFormState = {
     customerId: "",
+    locationId: "",
+    contactId: "",
     companyId: "",
     visitDate: new Date().toISOString().split("T")[0],
     visitTime: "10:00 AM",
@@ -106,6 +120,7 @@ export function VisitsClient({ role }: VisitsClientProps) {
   };
 
   const [formData, setFormData] = useState(initialFormState);
+  const [locations, setLocations] = useState<any[]>([]);
 
   const loadVisits = async () => {
     try {
@@ -144,28 +159,87 @@ export function VisitsClient({ role }: VisitsClientProps) {
     loadDependencies();
   }, []);
 
-  // Auto fill meeting location address when customer is chosen
+  useEffect(() => {
+    if (initCustomerId) {
+      handleCustomerChange(initCustomerId);
+      setIsCreateOpen(true);
+    }
+  }, [initCustomerId, customers]);
+
+  const loadLocations = async (custId: string) => {
+    try {
+      const res = await fetch(`${API_BASE}/api/customers/${custId}/locations`);
+      const json = await res.json();
+      if (json.success) setLocations(json.data.filter((l: any) => l.status === "ACTIVE"));
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const loadContactsByLocation = async (locId: string) => {
+    if (!locId) {
+      setContacts([]);
+      return;
+    }
+    try {
+      const res = await fetch(`${API_BASE}/api/locations/${locId}`);
+      const json = await res.json();
+      if (json.success) {
+        setContacts(json.data.contacts);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   const handleCustomerChange = (id: string) => {
     const selected = customers.find((c) => c.id === id);
     if (selected) {
-      const locStr = `${selected.address || ""}${selected.city ? `, ${selected.city}` : ""}${
-        selected.state ? `, ${selected.state}` : ""
-      }${selected.pincode ? ` - ${selected.pincode}` : ""}`;
-      
       // Auto-select company if they only have one assignment
       let autoCompanyId = formData.companyId;
-      if (selected.assignments.length === 1) {
+      if (selected.assignments?.length === 1) {
         autoCompanyId = selected.assignments[0].companyId;
       }
 
       setFormData((prev) => ({
         ...prev,
         customerId: id,
+        locationId: "",
+        contactId: "",
         companyId: autoCompanyId,
+        location: "", // clear old address
+      }));
+      loadLocations(id);
+      setContacts([]); // reset contacts
+    } else {
+      setFormData((prev) => ({ ...prev, customerId: id, locationId: "", contactId: "", location: "" }));
+      setLocations([]);
+      setContacts([]);
+    }
+  };
+
+  const handleLocationChange = (locId: string) => {
+    const selectedLoc = locations.find((l) => l.id === locId);
+    if (selectedLoc) {
+      const locStr = `${selectedLoc.address || ""}${selectedLoc.city ? `, ${selectedLoc.city}` : ""}${
+        selectedLoc.state ? `, ${selectedLoc.state}` : ""
+      }${selectedLoc.pincode ? ` - ${selectedLoc.pincode}` : ""}`;
+
+      setFormData((prev) => ({
+        ...prev,
+        locationId: locId,
+        contactId: "",
         location: locStr.trim().replace(/^, /, ""),
       }));
+      loadContactsByLocation(locId);
     } else {
-      setFormData((prev) => ({ ...prev, customerId: id }));
+      setFormData((prev) => ({
+        ...prev,
+        locationId: "",
+        contactId: "",
+        location: "",
+      }));
+      setContacts([]);
     }
   };
 
@@ -317,11 +391,13 @@ export function VisitsClient({ role }: VisitsClientProps) {
     setIsCreateOpen(true);
   };
 
-  const openEditModal = (v: VisitItem) => {
+  const openEditModal = async (v: VisitItem) => {
     setErrorMsg("");
     setSelectedVisit(v);
     setFormData({
       customerId: v.customer.id,
+      locationId: v.locationId || "",
+      contactId: v.contact?.id || "",
       companyId: v.company.id,
       visitDate: v.visitDate.split("T")[0],
       visitTime: v.visitTime || "10:00 AM",
@@ -334,6 +410,13 @@ export function VisitsClient({ role }: VisitsClientProps) {
       nextFollowupDate: v.nextFollowupDate ? v.nextFollowupDate.split("T")[0] : "",
     });
     setAttachmentUrl(v.attachment);
+    
+    // Load locations and contacts for edit
+    await loadLocations(v.customer.id);
+    if (v.locationId) {
+      await loadContactsByLocation(v.locationId);
+    }
+    
     setIsEditOpen(true);
   };
 
@@ -435,7 +518,12 @@ export function VisitsClient({ role }: VisitsClientProps) {
                 <tr key={v.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition-colors">
                   <td className="px-6 py-4 font-bold text-slate-900 dark:text-white">
                     <div>{v.customer.name}</div>
-                    <div className="text-slate-500 font-medium text-xs">{v.customer.companyName || "Individual"}</div>
+                    {v.contact && (
+                      <div className="text-blue-500 font-medium text-[11px] mt-0.5">
+                        Contact: {v.contact.name}
+                      </div>
+                    )}
+                    <div className="text-slate-500 font-medium text-[10px] mt-0.5">{v.customer.companyName || "Individual"}</div>
                   </td>
                   <td className="px-6 py-4 font-bold text-blue-600 dark:text-blue-400">
                     {v.company.name}
@@ -513,8 +601,8 @@ export function VisitsClient({ role }: VisitsClientProps) {
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-3">
-             <div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+             <div className="sm:col-span-2">
               <label className="block font-semibold mb-1">Select Customer *</label>
               <select
                 required
@@ -530,7 +618,60 @@ export function VisitsClient({ role }: VisitsClientProps) {
                 ))}
               </select>
             </div>
-             <div>
+             <div className="sm:col-span-2 md:col-span-1">
+              <label className="block font-semibold mb-1">Select Location *</label>
+              <select
+                required
+                value={formData.locationId}
+                onChange={(e) => handleLocationChange(e.target.value)}
+                className="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 font-bold text-emerald-600"
+                disabled={!formData.customerId}
+              >
+                <option value="">-- Choose Location --</option>
+                {locations.map((l) => (
+                  <option key={l.id} value={l.id}>
+                    {l.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+             <div className="sm:col-span-2 md:col-span-1">
+              <label className="block font-semibold mb-1">Select Contact *</label>
+              <select
+                required
+                value={formData.contactId}
+                onChange={(e) => setFormData({...formData, contactId: e.target.value})}
+                className="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 font-bold text-indigo-600"
+                disabled={!formData.locationId}
+              >
+                <option value="">-- Choose Contact --</option>
+                {contacts.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name} {c.designation ? `- ${c.designation}` : ""}
+                  </option>
+                ))}
+              </select>
+              {formData.contactId && (
+                <div className="mt-2 p-3 bg-indigo-50 dark:bg-indigo-950/40 rounded-xl border border-indigo-100 dark:border-indigo-900/50">
+                  {(() => {
+                    const selectedContact = contacts.find(c => c.id === formData.contactId);
+                    if (!selectedContact) return null;
+                    return (
+                      <div className="text-xs space-y-1 text-slate-700 dark:text-slate-300">
+                        <div className="font-bold text-indigo-900 dark:text-indigo-300">Selected Contact</div>
+                        <div><span className="font-semibold">Name:</span> {selectedContact.name}</div>
+                        {(selectedContact.designation || selectedContact.department) && (
+                          <div><span className="font-semibold">Role:</span> {selectedContact.designation} {selectedContact.department ? `(${selectedContact.department})` : ""}</div>
+                        )}
+                        {selectedContact.mobile && <div><span className="font-semibold">📱</span> {selectedContact.mobile}</div>}
+                        {selectedContact.email && <div><span className="font-semibold">✉</span> {selectedContact.email}</div>}
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
+            </div>
+             <div className="sm:col-span-2 md:col-span-1">
               <label className="block font-semibold mb-1">Select Company Profile *</label>
               <select
                 required
@@ -548,7 +689,7 @@ export function VisitsClient({ role }: VisitsClientProps) {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block font-semibold mb-1">Visit Date *</label>
               <input
@@ -562,8 +703,7 @@ export function VisitsClient({ role }: VisitsClientProps) {
             <div>
               <label className="block font-semibold mb-1">Visit Time</label>
               <input
-                type="text"
-                placeholder="10:30 AM"
+                type="time"
                 value={formData.visitTime}
                 onChange={(e) => setFormData({ ...formData, visitTime: e.target.value })}
                 className="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
@@ -571,7 +711,7 @@ export function VisitsClient({ role }: VisitsClientProps) {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block font-semibold mb-1">Visit Type *</label>
               <select
@@ -697,8 +837,8 @@ export function VisitsClient({ role }: VisitsClientProps) {
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-3">
-             <div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+             <div className="sm:col-span-2">
               <label className="block font-semibold mb-1">Customer *</label>
               <select
                 disabled
@@ -712,7 +852,17 @@ export function VisitsClient({ role }: VisitsClientProps) {
                 ))}
               </select>
             </div>
-             <div>
+             <div className="sm:col-span-2 md:col-span-1">
+              <label className="block font-semibold mb-1">Contact *</label>
+              <select
+                disabled
+                value={formData.contactId}
+                className="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 font-bold text-indigo-600 opacity-70"
+              >
+                <option value={formData.contactId}>{selectedVisit?.contact?.name || "Unknown"}</option>
+              </select>
+            </div>
+             <div className="sm:col-span-2 md:col-span-1">
               <label className="block font-semibold mb-1">Company Profile *</label>
               <select
                 disabled
@@ -728,7 +878,7 @@ export function VisitsClient({ role }: VisitsClientProps) {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block font-semibold mb-1">Visit Date</label>
               <input
@@ -750,7 +900,7 @@ export function VisitsClient({ role }: VisitsClientProps) {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block font-semibold mb-1">Visit Type</label>
               <select

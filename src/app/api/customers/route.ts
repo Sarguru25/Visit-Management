@@ -21,6 +21,17 @@ const createCustomerSchema = z.object({
     companyId: z.string().min(1, "Company is required"),
     employeeId: z.string().optional().nullable(),
   })).min(1, "At least one assignment is required"),
+  locations: z.array(z.object({
+    name: z.string().min(1),
+    type: z.string().optional().nullable(),
+    contacts: z.array(z.object({
+      name: z.string().min(1),
+      designation: z.string().optional().nullable(),
+      department: z.string().optional().nullable(),
+      mobile: z.string().optional().nullable(),
+      email: z.string().optional().nullable(),
+    })).optional()
+  })).optional()
 });
 
 export async function GET(req: NextRequest) {
@@ -83,7 +94,11 @@ export async function GET(req: NextRequest) {
             employee: { include: { user: { select: { name: true, email: true } } } }
           }
         },
-        _count: { select: { visits: true } },
+        _count: { select: { visits: true, contacts: { where: { status: 'ACTIVE' } } } },
+        contacts: {
+          where: { isPrimary: true, status: 'ACTIVE' },
+          take: 1
+        },
         visits: {
           take: 1,
           orderBy: { visitDate: "desc" },
@@ -161,6 +176,31 @@ export async function POST(req: NextRequest) {
         createdBy: session.userId,
       }
     });
+
+    if (data.locations && data.locations.length > 0) {
+      for (const loc of data.locations) {
+        const newLoc = await prisma.location.create({
+          data: {
+            customerId: customer.id,
+            name: loc.name,
+            type: loc.type || null,
+          }
+        });
+        if (loc.contacts && loc.contacts.length > 0) {
+          await prisma.contact.createMany({
+            data: loc.contacts.map((c, i) => ({
+              customerId: customer.id,
+              locationId: newLoc.id,
+              name: c.name,
+              designation: c.designation || null,
+              department: c.department || null,
+              mobile: c.mobile || null,
+              isPrimary: i === 0 && data.locations?.indexOf(loc) === 0
+            }))
+          });
+        }
+      }
+    }
 
     // Create Assignments
     for (const assignmentData of userAssignments) {

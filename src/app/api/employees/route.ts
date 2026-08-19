@@ -19,8 +19,8 @@ const createEmployeeSchema = z.object({
 export async function GET(req: NextRequest) {
   try {
     const session = await getSessionUser();
-    if (!session || session.role !== "ADMIN") {
-      return errorResponse("Forbidden: Admin access required", 403);
+    if (!session) {
+      return errorResponse("Unauthorized", 401);
     }
 
     const { searchParams } = new URL(req.url);
@@ -28,21 +28,23 @@ export async function GET(req: NextRequest) {
     const department = searchParams.get("department") || "";
     const status = searchParams.get("status") || "";
 
-    const employees = await prisma.employee.findMany({
-      where: {
-        user: {
-          role: "EMPLOYEE",
-          status: status ? status : undefined,
-          OR: search
-            ? [
-                { name: { contains: search } },
-                { email: { contains: search } },
-                { phone: { contains: search } },
-              ]
-            : undefined,
-        },
-        department: department ? { contains: department } : undefined,
+    const whereClause: any = {
+      user: {
+        role: "EMPLOYEE",
+        status: status ? status : undefined,
+        OR: search
+          ? [
+              { name: { contains: search } },
+              { email: { contains: search } },
+              { phone: { contains: search } },
+            ]
+          : undefined,
       },
+      department: department ? { contains: department } : undefined,
+    };
+
+    const employees = await prisma.employee.findMany({
+      where: whereClause,
       include: {
         user: {
           select: {

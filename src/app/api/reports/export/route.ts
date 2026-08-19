@@ -6,8 +6,8 @@ import * as XLSX from "xlsx";
 export async function GET(req: NextRequest) {
   try {
     const session = await getSessionUser();
-    if (!session || session.role !== "ADMIN") {
-      return NextResponse.json({ success: false, message: "Forbidden" }, { status: 403 });
+    if (!session) {
+      return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
     }
 
     const { searchParams } = new URL(req.url);

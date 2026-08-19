@@ -37,6 +37,7 @@ export function Sidebar({ role, isOpen, onClose }: SidebarProps) {
     { name: "Dashboard", href: "/employee/dashboard", icon: LayoutDashboard },
     { name: "My Customers", href: "/employee/customers", icon: Briefcase },
     { name: "My Visits", href: "/employee/visits", icon: MapPin },
+    { name: "Reports & Export", href: "/employee/reports", icon: FileSpreadsheet },
     { name: "Profile & Security", href: "/employee/profile", icon: User },
   ];
 

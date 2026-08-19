@@ -1,6 +1,10 @@
-import React from "react";
+import React, { Suspense } from "react";
 import { VisitsClient } from "@/components/visits/VisitsClient";
 
 export default function AdminVisitsPage() {
-  return <VisitsClient role="ADMIN" />;
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <VisitsClient role="ADMIN" />
+    </Suspense>
+  );
 }

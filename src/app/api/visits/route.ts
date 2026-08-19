@@ -8,6 +8,8 @@ import { z } from "zod";
 
 const createVisitSchema = z.object({
   customerId: z.string().min(1, "Customer is required"),
+  locationId: z.string().min(1, "Location is required"),
+  contactId: z.string().min(1, "Contact is required"),
   companyId: z.string().min(1, "Company is required"),
   visitDate: z.string().min(1, "Visit date is required"),
   visitTime: z.string().optional().nullable(),
@@ -32,6 +34,7 @@ export async function GET(req: NextRequest) {
     const status = searchParams.get("status") || "";
     const visitType = searchParams.get("visitType") || "";
     const customerId = searchParams.get("customerId") || searchParams.get("leadId") || "";
+    const locationId = searchParams.get("locationId") || "";
     const companyId = searchParams.get("companyId") || "";
     const employeeIdParam = searchParams.get("employeeId") || "";
     const dateFrom = searchParams.get("dateFrom") || "";
@@ -53,6 +56,7 @@ export async function GET(req: NextRequest) {
     }
 
     if (customerId) whereClause.customerId = customerId;
+    if (locationId) whereClause.locationId = locationId;
     if (companyId) whereClause.companyId = companyId;
     if (status) whereClause.status = status;
     if (visitType) whereClause.visitType = visitType;
@@ -85,6 +89,8 @@ export async function GET(req: NextRequest) {
           },
         },
         company: { select: { id: true, name: true } },
+        customerLocation: { select: { id: true, name: true, type: true } },
+        contact: { select: { id: true, name: true, designation: true, mobile: true, email: true } },
         employee: {
           include: {
             user: { select: { name: true, email: true } },
@@ -121,6 +127,24 @@ export async function POST(req: NextRequest) {
     });
 
     if (!customer) return errorResponse("Customer not found", 404);
+
+    const location = await prisma.location.findUnique({ where: { id: data.locationId } });
+    if (!location) return errorResponse("Location not found", 404);
+    if (location.customerId !== data.customerId) {
+      return errorResponse("Location does not belong to the selected customer", 400);
+    }
+
+    const contact = await prisma.contact.findUnique({ 
+      where: { id: data.contactId }
+    });
+    if (!contact) return errorResponse("Contact not found", 404);
+    if (contact.customerId !== data.customerId) {
+      return errorResponse("Contact does not belong to the selected customer", 400);
+    }
+
+    if (contact.locationId !== data.locationId) {
+      return errorResponse("The selected contact is not associated with the selected location.", 400);
+    }
 
     let targetEmployeeId = data.employeeId;
 
@@ -159,6 +183,7 @@ export async function POST(req: NextRequest) {
     const newVisit = await prisma.visit.create({
       data: {
         customerId: data.customerId,
+        contactId: data.contactId,
         companyId: data.companyId,
         employeeId: targetEmployeeId,
         visitDate: new Date(data.visitDate),
@@ -174,6 +199,7 @@ export async function POST(req: NextRequest) {
       },
       include: {
         customer: true,
+        contact: true,
         company: { select: { name: true } },
         employee: {
           include: { user: { select: { name: true } } },
@@ -181,11 +207,11 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    if (customer.email && newVisit.status === "COMPLETED") {
+    if (contact.email && newVisit.status === "COMPLETED") {
       // NOTE: sendVisitThankYouEmail is just a stub imported above
       sendVisitThankYouEmail({
-        customerEmail: customer.email,
-        customerName: customer.name,
+        customerEmail: contact.email,
+        customerName: contact.name,
         visitDate: newVisit.visitDate.toISOString().split("T")[0],
         visitType: newVisit.visitType.replace("_", " "),
         nextFollowupDate: newVisit.nextFollowupDate ? newVisit.nextFollowupDate.toISOString().split("T")[0] : "N/A",
