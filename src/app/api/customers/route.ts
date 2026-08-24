@@ -24,12 +24,20 @@ const createCustomerSchema = z.object({
   locations: z.array(z.object({
     name: z.string().min(1),
     type: z.string().optional().nullable(),
+    pincode: z.string().optional().nullable(),
+    address: z.string().optional().nullable(),
+    city: z.string().optional().nullable(),
+    state: z.string().optional().nullable(),
+    country: z.string().optional().nullable(),
+    notes: z.string().optional().nullable(),
     contacts: z.array(z.object({
       name: z.string().min(1),
       designation: z.string().optional().nullable(),
       department: z.string().optional().nullable(),
       mobile: z.string().optional().nullable(),
       email: z.string().optional().nullable(),
+      notes: z.string().optional().nullable(),
+      isPrimary: z.boolean().optional(),
     })).optional()
   })).optional()
 });
@@ -184,6 +192,12 @@ export async function POST(req: NextRequest) {
             customerId: customer.id,
             name: loc.name,
             type: loc.type || null,
+            pincode: loc.pincode || null,
+            address: loc.address || null,
+            city: loc.city || null,
+            state: loc.state || null,
+            country: loc.country || null,
+            notes: loc.notes || null,
           }
         });
         if (loc.contacts && loc.contacts.length > 0) {
@@ -195,7 +209,9 @@ export async function POST(req: NextRequest) {
               designation: c.designation || null,
               department: c.department || null,
               mobile: c.mobile || null,
-              isPrimary: i === 0 && data.locations?.indexOf(loc) === 0
+              email: c.email || null,
+              notes: c.notes || null,
+              isPrimary: c.isPrimary !== undefined ? c.isPrimary : (i === 0 && data.locations?.indexOf(loc) === 0)
             }))
           });
         }

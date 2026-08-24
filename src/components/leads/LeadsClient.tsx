@@ -91,7 +91,7 @@ export function LeadsClient({ role }: CustomersClientProps) {
     pincode: "",
     industry: "",
     assignments: [{ companyId: "", employeeId: "" }],
-    locations: [] as { name: string, type: string, contacts: { name: string, designation: string, department: string, mobile: string, email: string }[] }[]
+    locations: [] as { name: string, type: string, pincode: string, address: string, city: string, state: string, country: string, notes: string, contacts: { name: string, designation: string, department: string, mobile: string, email: string, notes: string, isPrimary: boolean }[] }[]
   };
 
   const [formData, setFormData] = useState(initialFormState);
@@ -112,7 +112,7 @@ export function LeadsClient({ role }: CustomersClientProps) {
   };
 
   const addLocation = () => {
-    setFormData({ ...formData, locations: [...formData.locations, { name: "", type: "", contacts: [] }] });
+    setFormData({ ...formData, locations: [...formData.locations, { name: "", type: "", pincode: "", address: "", city: "", state: "", country: "", notes: "", contacts: [] }] });
   };
 
   const updateLocation = (index: number, field: string, value: string) => {
@@ -128,11 +128,11 @@ export function LeadsClient({ role }: CustomersClientProps) {
 
   const addContact = (locIndex: number) => {
     const newLocs = [...formData.locations];
-    newLocs[locIndex].contacts.push({ name: "", designation: "", department: "", mobile: "", email: "" });
+    newLocs[locIndex].contacts.push({ name: "", designation: "", department: "", mobile: "", email: "", notes: "", isPrimary: false });
     setFormData({ ...formData, locations: newLocs });
   };
 
-  const updateContact = (locIndex: number, contactIndex: number, field: string, value: string) => {
+  const updateContact = (locIndex: number, contactIndex: number, field: string, value: any) => {
     const newLocs = [...formData.locations];
     newLocs[locIndex].contacts[contactIndex] = { ...newLocs[locIndex].contacts[contactIndex], [field]: value };
     setFormData({ ...formData, locations: newLocs });
@@ -682,6 +682,30 @@ export function LeadsClient({ role }: CustomersClientProps) {
                           <option value="Other">Other</option>
                         </select>
                       </div>
+                      <div className="space-y-1">
+                        <label className="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Pincode</label>
+                        <input type="text" placeholder="e.g. 600068" value={loc.pincode} onChange={e => updateLocation(locIdx, 'pincode', e.target.value)} className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all" />
+                      </div>
+                      <div className="space-y-1 sm:col-span-2">
+                        <label className="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Street Address</label>
+                        <input type="text" placeholder="e.g. Expressway Highway, Industrial Area" value={loc.address} onChange={e => updateLocation(locIdx, 'address', e.target.value)} className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all" />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider">City</label>
+                        <input type="text" placeholder="e.g. Chennai" value={loc.city} onChange={e => updateLocation(locIdx, 'city', e.target.value)} className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all" />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider">State</label>
+                        <input type="text" placeholder="e.g. Tamil Nadu" value={loc.state} onChange={e => updateLocation(locIdx, 'state', e.target.value)} className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all" />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Country</label>
+                        <input type="text" placeholder="e.g. India" value={loc.country} onChange={e => updateLocation(locIdx, 'country', e.target.value)} className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all" />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Notes / Remarks</label>
+                        <input type="text" placeholder="Any specific details" value={loc.notes} onChange={e => updateLocation(locIdx, 'notes', e.target.value)} className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all" />
+                      </div>
                     </div>
 
                     {/* Nested Contacts */}
@@ -747,8 +771,27 @@ export function LeadsClient({ role }: CustomersClientProps) {
                               placeholder="Email Address" 
                               value={contact.email} 
                               onChange={e => updateContact(locIdx, contactIdx, 'email', e.target.value)} 
-                              className="p-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 outline-none focus:ring-1 focus:ring-blue-500 sm:col-span-2" 
+                              className="p-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 outline-none focus:ring-1 focus:ring-blue-500" 
                             />
+                            <input 
+                              type="text" 
+                              placeholder="Notes / Reminders" 
+                              value={contact.notes} 
+                              onChange={e => updateContact(locIdx, contactIdx, 'notes', e.target.value)} 
+                              className="p-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 outline-none focus:ring-1 focus:ring-blue-500" 
+                            />
+                            <div className="sm:col-span-2 pt-1 flex items-center gap-2">
+                              <input 
+                                type="checkbox" 
+                                id={`primary-${locIdx}-${contactIdx}`}
+                                checked={contact.isPrimary} 
+                                onChange={e => updateContact(locIdx, contactIdx, 'isPrimary', e.target.checked)} 
+                                className="w-3.5 h-3.5 rounded text-blue-600 focus:ring-blue-500 border-slate-300 dark:border-slate-700" 
+                              />
+                              <label htmlFor={`primary-${locIdx}-${contactIdx}`} className="text-[11px] font-semibold text-slate-600 dark:text-slate-400 cursor-pointer">
+                                Mark as Primary Contact
+                              </label>
+                            </div>
                           </div>
                         </div>
                       ))}
