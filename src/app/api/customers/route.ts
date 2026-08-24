@@ -56,13 +56,8 @@ export async function GET(req: NextRequest) {
 
     const whereClause: any = {};
     
-    // For employee, only return assignments they own
+    // Removed forced employee filtering to allow all salespersons to see all customers
     let targetEmployeeId = employeeIdParam;
-    if (session.role === "EMPLOYEE") {
-      const emp = await prisma.employee.findUnique({ where: { userId: session.userId } });
-      if (!emp) return errorResponse("Employee profile not found", 403);
-      targetEmployeeId = emp.id;
-    }
 
     if (targetEmployeeId) {
       whereClause.assignments = {

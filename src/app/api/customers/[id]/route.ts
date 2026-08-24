@@ -57,18 +57,7 @@ export async function GET(
 
     if (!customer) return errorResponse("Customer not found", 404);
 
-    let empId = session.employeeId;
-    if (session.role === "EMPLOYEE" && !empId) {
-      const emp = await prisma.employee.findUnique({ where: { userId: session.userId } });
-      if (emp) empId = emp.id;
-    }
-
-    if (session.role === "EMPLOYEE") {
-      const isAssigned = customer.assignments.some((a: any) => a.employeeId === empId);
-      if (!isAssigned) {
-        return errorResponse("Forbidden: You can only view your assigned customers", 403);
-      }
-    }
+    // Employee assignment checks removed to allow all employees to view all customers
 
     return successResponse(customer, "Customer details retrieved");
   } catch (error) {
@@ -95,18 +84,6 @@ export async function PUT(
     
     if (!customer) return errorResponse("Customer not found", 404);
 
-    let empId = session.employeeId;
-    if (session.role === "EMPLOYEE" && !empId) {
-      const emp = await prisma.employee.findUnique({ where: { userId: session.userId } });
-      if (emp) empId = emp.id;
-    }
-
-    if (session.role === "EMPLOYEE") {
-      const isAssigned = customer.assignments.some((a: any) => a.employeeId === empId);
-      if (!isAssigned) {
-        return errorResponse("Forbidden: You can only edit your assigned customers", 403);
-      }
-    }
 
     const updatedCustomer = await prisma.customer.update({
       where: { id },
@@ -180,12 +157,6 @@ export async function DELETE(
     });
     
     if (!customer) return errorResponse("Customer not found", 404);
-
-    let empId = session.employeeId;
-    if (session.role === "EMPLOYEE" && !empId) {
-      const emp = await prisma.employee.findUnique({ where: { userId: session.userId } });
-      if (emp) empId = emp.id;
-    }
 
     if (session.role === "EMPLOYEE") {
       return errorResponse("Forbidden: Only ADMIN can delete global customers", 403);

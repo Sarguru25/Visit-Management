@@ -155,11 +155,6 @@ export async function POST(req: NextRequest) {
         if (emp) empId = emp.id;
       }
       
-      const isAssigned = customer.assignments.some(a => a.employeeId === empId && a.companyId === data.companyId);
-      if (!isAssigned) {
-        return errorResponse("Forbidden: You are not assigned to this customer for this company", 403);
-      }
-      
       targetEmployeeId = empId;
     }
 
