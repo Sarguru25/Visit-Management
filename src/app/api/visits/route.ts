@@ -178,6 +178,7 @@ export async function POST(req: NextRequest) {
     const newVisit = await prisma.visit.create({
       data: {
         customerId: data.customerId,
+        locationId: data.locationId,
         contactId: data.contactId,
         companyId: data.companyId,
         employeeId: targetEmployeeId,

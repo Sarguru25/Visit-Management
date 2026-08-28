@@ -60,8 +60,8 @@ export async function PUT(
     const updatedVisit = await prisma.visit.update({
       where: { id },
       data: {
-        locationId: body.locationId !== undefined ? body.locationId : visit.locationId,
-        contactId: body.contactId !== undefined ? body.contactId : visit.contactId,
+        locationId: body.locationId !== undefined ? (body.locationId || null) : visit.locationId,
+        contactId: body.contactId !== undefined ? (body.contactId || null) : visit.contactId,
         visitDate: body.visitDate !== undefined ? new Date(body.visitDate) : visit.visitDate,
         visitTime: body.visitTime !== undefined ? body.visitTime : visit.visitTime,
         visitType: body.visitType !== undefined ? body.visitType : visit.visitType,
