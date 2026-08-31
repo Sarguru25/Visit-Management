@@ -17,7 +17,9 @@ import {
   Briefcase,
   UserCheck,
   Building,
-  Sparkles
+  Sparkles,
+  Download,
+  UploadCloud
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -79,6 +81,11 @@ export function LeadsClient({ role }: CustomersClientProps) {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  
+  const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
+  const [bulkFile, setBulkFile] = useState<File | null>(null);
+  const [bulkUploading, setBulkUploading] = useState(false);
+  const [bulkError, setBulkError] = useState("");
 
   const initialFormState = {
     name: "",
@@ -250,6 +257,38 @@ export function LeadsClient({ role }: CustomersClientProps) {
     }
   };
 
+  const handleBulkUpload = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!bulkFile) return;
+    
+    try {
+      setBulkUploading(true);
+      setBulkError("");
+      const formData = new FormData();
+      formData.append("file", bulkFile);
+      
+      const res = await fetch(`${API_BASE}/api/customers/bulk-upload`, {
+        method: "POST",
+        body: formData,
+      });
+      
+      const json = await res.json();
+      if (json.success) {
+        setIsBulkUploadOpen(false);
+        setBulkFile(null);
+        await loadCustomers();
+        alert(`Successfully imported ${json.data.count} customers!`);
+      } else {
+        setBulkError(json.message || "Failed to upload file");
+      }
+    } catch (e) {
+      console.error(e);
+      setBulkError("Network error during bulk upload.");
+    } finally {
+      setBulkUploading(false);
+    }
+  };
+
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this customer? All their assignments and visits will be deleted as well.")) return;
     try {
@@ -315,13 +354,30 @@ export function LeadsClient({ role }: CustomersClientProps) {
             Global view of all customers and their active cross-company assignments.
           </p>
         </div>
-        <button
-          onClick={openCreateModal}
-          className="w-full sm:w-auto min-h-[44px] py-2.5 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs shadow-lg shadow-blue-500/25 transition-all flex items-center justify-center space-x-2"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Add Customer & Assign</span>
-        </button>
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+          <a
+            href="/Customer_Template.xlsx"
+            download
+            className="w-full sm:w-auto min-h-[44px] py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs transition-all flex items-center justify-center space-x-2"
+          >
+            <Download className="w-4 h-4" />
+            <span>Template</span>
+          </a>
+          <button
+            onClick={() => setIsBulkUploadOpen(true)}
+            className="w-full sm:w-auto min-h-[44px] py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs transition-all flex items-center justify-center space-x-2"
+          >
+            <UploadCloud className="w-4 h-4" />
+            <span>Bulk Upload</span>
+          </button>
+          <button
+            onClick={openCreateModal}
+            className="w-full sm:w-auto min-h-[44px] py-2.5 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs shadow-lg shadow-blue-500/25 transition-all flex items-center justify-center space-x-2"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Add Customer</span>
+          </button>
+        </div>
       </div>
 
       <Card className="p-4 flex flex-col sm:flex-row gap-4 items-center justify-between">
@@ -977,6 +1033,48 @@ export function LeadsClient({ role }: CustomersClientProps) {
               className="px-6 py-2.5 rounded-xl bg-blue-600 text-white font-bold text-xs hover:bg-blue-500 shadow-md shadow-blue-500/20 active:scale-[0.98] disabled:opacity-50 transition-all"
             >
               {submitting ? "Updating..." : "Update Customer"}
+            </button>
+          </div>
+        </form>
+      </Dialog>
+
+      <Dialog isOpen={isBulkUploadOpen} onClose={() => setIsBulkUploadOpen(false)} title="Bulk Upload Customers" maxWidth="md">
+        <form onSubmit={handleBulkUpload} className="p-4 sm:p-6 space-y-6 max-h-[85vh] overflow-y-auto">
+          {bulkError && (
+            <div className="p-3 bg-red-50 text-red-600 dark:bg-red-900/30 text-xs font-semibold rounded-xl flex items-start gap-2">
+              <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+              <span>{bulkError}</span>
+            </div>
+          )}
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="block font-semibold text-slate-700 dark:text-slate-300">Upload Excel File</label>
+              <input 
+                type="file" 
+                accept=".xlsx, .xls"
+                onChange={(e) => setBulkFile(e.target.files ? e.target.files[0] : null)}
+                className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-slate-800 dark:file:text-slate-200"
+              />
+              <p className="text-xs text-slate-500">
+                Please use the provided template. The system will group matching locations and contacts automatically based on Customer Name.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center justify-end space-x-3 pt-4 border-t border-slate-200 dark:border-slate-800">
+            <button 
+              type="button" 
+              onClick={() => setIsBulkUploadOpen(false)} 
+              className="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 font-bold text-xs text-slate-700 dark:text-slate-200 transition-colors"
+            >
+              Cancel
+            </button>
+            <button 
+              type="submit" 
+              disabled={bulkUploading || !bulkFile} 
+              className="px-6 py-2.5 rounded-xl bg-blue-600 text-white font-bold text-xs hover:bg-blue-500 shadow-md shadow-blue-500/20 active:scale-[0.98] disabled:opacity-50 transition-all flex items-center justify-center gap-2"
+            >
+              <UploadCloud className="w-4 h-4" />
+              <span>{bulkUploading ? "Uploading..." : "Import Data"}</span>
             </button>
           </div>
         </form>
