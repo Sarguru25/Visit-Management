@@ -321,6 +321,7 @@ export default function AdminReportsPage() {
               <option value="Chemical">Chemical</option>
               <option value="Food & Pharma">Food & Pharma</option>
               <option value="Fire Fighting">Fire Fighting</option>
+              <option value="Others">Others</option>
             </select>
           </div>
 
@@ -335,6 +336,7 @@ export default function AdminReportsPage() {
               <option value="End User">End User</option>
               <option value="OEM">OEM</option>
               <option value="Manufacturer">Manufacturer</option>
+              <option value="Others">Others</option>
             </select>
           </div>
 

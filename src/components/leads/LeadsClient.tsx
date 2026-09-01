@@ -27,6 +27,23 @@ import { Dialog } from "@/components/ui/dialog";
 import { Edit } from "lucide-react";
 import Link from "next/link";
 
+const STANDARD_SEGMENTS = [
+  "Water & Waste Water",
+  "Oil & Gas",
+  "Energy & Power",
+  "Marine & Offshore",
+  "Pulp & Paper",
+  "Chemical",
+  "Food & Pharma",
+  "Fire Fighting",
+];
+
+const STANDARD_TYPES = [
+  "End User",
+  "OEM",
+  "Manufacturer",
+];
+
 interface Company {
   id: string;
   name: string;
@@ -417,6 +434,7 @@ export function LeadsClient({ role }: CustomersClientProps) {
             <option value="Chemical">Chemical</option>
             <option value="Food & Pharma">Food & Pharma</option>
             <option value="Fire Fighting">Fire Fighting</option>
+            <option value="Others">Others</option>
           </select>
           <select
             value={typeFilter}
@@ -427,6 +445,7 @@ export function LeadsClient({ role }: CustomersClientProps) {
             <option value="End User">End User</option>
             <option value="OEM">OEM</option>
             <option value="Manufacturer">Manufacturer</option>
+            <option value="Others">Others</option>
           </select>
         </div>
       </Card>
@@ -632,34 +651,51 @@ export function LeadsClient({ role }: CustomersClientProps) {
               <div className="space-y-1">
                 <label className="block font-semibold text-slate-700 dark:text-slate-300">Customer Segment</label>
                 <select 
-                  value={formData.companyName} 
+                  value={!formData.companyName || STANDARD_SEGMENTS.includes(formData.companyName) ? formData.companyName : "Others"} 
                   onChange={e => setFormData({...formData, companyName: e.target.value})} 
                   className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none transition-all"
                 >
                   <option value="">Select Segment...</option>
-                  <option value="Water & Waste Water">Water & Waste Water</option>
-                  <option value="Oil & Gas">Oil & Gas</option>
-                  <option value="Energy & Power">Energy & Power</option>
-                  <option value="Marine & Offshore">Marine & Offshore</option>
-                  <option value="Pulp & Paper">Pulp & Paper</option>
-                  <option value="Chemical">Chemical</option>
-                  <option value="Food & Pharma">Food & Pharma</option>
-                  <option value="Fire Fighting">Fire Fighting</option>
+                  {STANDARD_SEGMENTS.map(s => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                  <option value="Others">Others</option>
                 </select>
+                {(!formData.companyName || !STANDARD_SEGMENTS.includes(formData.companyName)) && formData.companyName !== "" && (
+                  <input
+                    type="text"
+                    required
+                    placeholder="Enter custom segment..."
+                    value={formData.companyName === "Others" ? "" : formData.companyName}
+                    onChange={e => setFormData({...formData, companyName: e.target.value || "Others"})}
+                    className="w-full mt-2 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none transition-all text-xs"
+                  />
+                )}
               </div>
 
               <div className="space-y-1">
                 <label className="block font-semibold text-slate-700 dark:text-slate-300">Customer Type</label>
                 <select 
-                  value={formData.industry} 
+                  value={!formData.industry || STANDARD_TYPES.includes(formData.industry) ? formData.industry : "Others"} 
                   onChange={e => setFormData({...formData, industry: e.target.value})} 
                   className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none transition-all"
                 >
                   <option value="">Select Type...</option>
-                  <option value="End User">End User</option>
-                  <option value="OEM">OEM</option>
-                  <option value="Manufacturer">Manufacturer</option>
+                  {STANDARD_TYPES.map(t => (
+                    <option key={t} value={t}>{t}</option>
+                  ))}
+                  <option value="Others">Others</option>
                 </select>
+                {(!formData.industry || !STANDARD_TYPES.includes(formData.industry)) && formData.industry !== "" && (
+                  <input
+                    type="text"
+                    required
+                    placeholder="Enter custom customer type..."
+                    value={formData.industry === "Others" ? "" : formData.industry}
+                    onChange={e => setFormData({...formData, industry: e.target.value || "Others"})}
+                    className="w-full mt-2 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none transition-all text-xs"
+                  />
+                )}
               </div>
             </div>
           </div>
@@ -987,34 +1023,51 @@ export function LeadsClient({ role }: CustomersClientProps) {
               <div className="space-y-1">
                 <label className="block font-semibold text-slate-700 dark:text-slate-300">Customer Segment</label>
                 <select 
-                  value={formData.companyName} 
+                  value={!formData.companyName || STANDARD_SEGMENTS.includes(formData.companyName) ? formData.companyName : "Others"} 
                   onChange={e => setFormData({...formData, companyName: e.target.value})} 
                   className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none transition-all"
                 >
                   <option value="">Select Segment...</option>
-                  <option value="Water & Waste Water">Water & Waste Water</option>
-                  <option value="Oil & Gas">Oil & Gas</option>
-                  <option value="Energy & Power">Energy & Power</option>
-                  <option value="Marine & Offshore">Marine & Offshore</option>
-                  <option value="Pulp & Paper">Pulp & Paper</option>
-                  <option value="Chemical">Chemical</option>
-                  <option value="Food & Pharma">Food & Pharma</option>
-                  <option value="Fire Fighting">Fire Fighting</option>
+                  {STANDARD_SEGMENTS.map(s => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                  <option value="Others">Others</option>
                 </select>
+                {(!formData.companyName || !STANDARD_SEGMENTS.includes(formData.companyName)) && formData.companyName !== "" && (
+                  <input
+                    type="text"
+                    required
+                    placeholder="Enter custom segment..."
+                    value={formData.companyName === "Others" ? "" : formData.companyName}
+                    onChange={e => setFormData({...formData, companyName: e.target.value || "Others"})}
+                    className="w-full mt-2 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none transition-all text-xs"
+                  />
+                )}
               </div>
 
               <div className="space-y-1">
                 <label className="block font-semibold text-slate-700 dark:text-slate-300">Customer Type</label>
                 <select 
-                  value={formData.industry} 
+                  value={!formData.industry || STANDARD_TYPES.includes(formData.industry) ? formData.industry : "Others"} 
                   onChange={e => setFormData({...formData, industry: e.target.value})} 
                   className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none transition-all"
                 >
                   <option value="">Select Type...</option>
-                  <option value="End User">End User</option>
-                  <option value="OEM">OEM</option>
-                  <option value="Manufacturer">Manufacturer</option>
+                  {STANDARD_TYPES.map(t => (
+                    <option key={t} value={t}>{t}</option>
+                  ))}
+                  <option value="Others">Others</option>
                 </select>
+                {(!formData.industry || !STANDARD_TYPES.includes(formData.industry)) && formData.industry !== "" && (
+                  <input
+                    type="text"
+                    required
+                    placeholder="Enter custom customer type..."
+                    value={formData.industry === "Others" ? "" : formData.industry}
+                    onChange={e => setFormData({...formData, industry: e.target.value || "Others"})}
+                    className="w-full mt-2 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none transition-all text-xs"
+                  />
+                )}
               </div>
             </div>
           </div>
