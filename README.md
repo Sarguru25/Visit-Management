@@ -25,7 +25,7 @@ visit-management
 │  │  │  │  └─ page.tsx
 │  │  │  ├─ email-templates
 │  │  │  │  └─ page.tsx
-│  │  │  ├─ employees
+│  │  │  ├─ employee    s
 │  │  │  │  └─ page.tsx
 │  │  │  ├─ page.tsx
 │  │  │  ├─ reports
@@ -117,3 +117,17 @@ visit-management
 └─ tsconfig.json
 
 ```
+
+
+├─ Zenith Manufacturing Ltd (Customer)
+│  ├─ Chennai (Location)
+│  │   └─ Karthik Raj (Contact)
+│  └─ Coimbatore (Location)
+│      └─ Sneha Iyer (Contact)
+│
+├─ ABC Automation Pvt Ltd (Customer)
+│  ├─ Coimbatore HQ (Location)
+│  │   ├─ Rahul Sharma (Contact)
+│  │   └─ Priya Nair (Contact)
+│  └─ Bangalore Store (Location)
+│      └─ Amit Verma (Contact)

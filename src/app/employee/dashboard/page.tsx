@@ -30,6 +30,7 @@ interface EmployeeDashboardData {
     visitTime: string;
     visitType: string;
     status: string;
+    visitReport?: string | null;
     customer: { name: string; companyName: string; phone: string };
   }>;
   upcomingFollowups: Array<{
@@ -231,6 +232,11 @@ export default function EmployeeDashboardPage() {
                     <div className="text-xs text-slate-500">
                       {v.customer?.name} • {v.customer?.phone}
                     </div>
+                    {v.visitReport && (
+                      <div className="text-[11px] text-slate-600 dark:text-slate-300 italic mt-1 line-clamp-1 bg-white/70 dark:bg-slate-900/70 px-2 py-0.5 rounded-md border border-slate-200/50 dark:border-slate-700/50">
+                        "{v.visitReport}"
+                      </div>
+                    )}
                   </div>
                 </div>
 

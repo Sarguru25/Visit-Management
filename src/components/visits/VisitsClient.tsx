@@ -14,6 +14,9 @@ import {
   Edit,
   AlertCircle,
   CheckCircle2,
+  Eye,
+  FileText,
+  ExternalLink,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -98,6 +101,8 @@ export function VisitsClient({ role }: VisitsClientProps) {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [selectedVisit, setSelectedVisit] = useState<VisitItem | null>(null);
+  const [isViewOpen, setIsViewOpen] = useState(false);
+  const [viewingVisit, setViewingVisit] = useState<VisitItem | null>(null);
 
   // File Upload State
   const [uploading, setUploading] = useState(false);
@@ -503,14 +508,15 @@ export function VisitsClient({ role }: VisitsClientProps) {
           <table className="w-full text-left text-xs text-slate-600 dark:text-slate-300 whitespace-nowrap">
             <thead className="bg-slate-100/70 dark:bg-slate-800/70 text-slate-500 uppercase font-bold tracking-wider">
               <tr>
-                <th className="px-6 py-3.5">Customer</th>
-                <th className="px-6 py-3.5">Company Profile</th>
-                <th className="px-6 py-3.5">Visit Date & Time</th>
-                <th className="px-6 py-3.5">Visit Type</th>
-                <th className="px-6 py-3.5">Location & GPS</th>
-                <th className="px-6 py-3.5">Status</th>
-                {role === "ADMIN" && <th className="px-6 py-3.5">Representative</th>}
-                <th className="px-6 py-3.5 text-right">Actions</th>
+                <th className="px-4 py-3.5">Customer</th>
+                <th className="px-4 py-3.5 whitespace-nowrap">Company</th>
+                <th className="px-4 py-3.5 whitespace-nowrap">Visit Date & Time</th>
+                <th className="px-4 py-3.5 whitespace-nowrap">Visit Type</th>
+                <th className="px-4 py-3.5">Location & GPS</th>
+                <th className="px-4 py-3.5">Notes & Discussion</th>
+                <th className="px-4 py-3.5 whitespace-nowrap">Status</th>
+                {role === "ADMIN" && <th className="px-4 py-3.5 whitespace-nowrap">Representative</th>}
+                <th className="px-4 py-3.5 text-right whitespace-nowrap">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -537,28 +543,49 @@ export function VisitsClient({ role }: VisitsClientProps) {
                   <td className="px-6 py-4 font-semibold text-purple-600 dark:text-purple-400">
                     {v.visitType.replace("_", " ")}
                   </td>
-                  <td className="px-6 py-4 max-w-xs truncate">
-                    <div className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
-                      <MapPin className="w-3.5 h-3.5 text-rose-500 shrink-0" />
-                      <span className="truncate">{v.location}</span>
+                  <td className="px-4 py-3.5 max-w-[170px] whitespace-normal">
+                    <div className="flex items-start gap-1 text-slate-700 dark:text-slate-300">
+                      <MapPin className="w-3.5 h-3.5 text-rose-500 shrink-0 mt-0.5" />
+                      <span className="line-clamp-3 leading-snug break-words text-xs">{v.location || "N/A"}</span>
                     </div>
                     {v.latitude && v.longitude && (
-                      <div className="text-[10px] text-blue-500 font-bold">
+                      <div className="text-[10px] text-blue-500 font-bold mt-1 pl-4.5">
                         GPS: {v.latitude.toFixed(4)}, {v.longitude.toFixed(4)}
                       </div>
                     )}
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-4 py-3.5 min-w-[180px] max-w-[300px] whitespace-normal">
+                    {v.visitReport ? (
+                      <div className="text-xs text-slate-800 dark:text-slate-200 font-medium leading-relaxed whitespace-pre-wrap break-words">
+                        {v.visitReport}
+                      </div>
+                    ) : (
+                      <span className="text-slate-400 italic text-xs">-</span>
+                    )}
+                    {v.attachment && (
+                      <div className="mt-1">
+                        <a
+                          href={v.attachment}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1 text-[10px] text-blue-600 dark:text-blue-400 font-semibold hover:underline"
+                        >
+                          <Paperclip className="w-3 h-3" /> Attached File
+                        </a>
+                      </div>
+                    )}
+                  </td>
+                  <td className="px-4 py-3.5 whitespace-nowrap">
                     <Badge variant={v.status === "COMPLETED" ? "success" : v.status === "PENDING" ? "warning" : "destructive"}>
                       {v.status}
                     </Badge>
                   </td>
                   {role === "ADMIN" && (
-                    <td className="px-6 py-4 font-medium text-slate-700 dark:text-slate-300">
+                    <td className="px-4 py-3.5 font-medium text-slate-700 dark:text-slate-300 whitespace-nowrap">
                       {v.employee.user.name}
                     </td>
                   )}
-                  <td className="px-6 py-4 text-right space-x-2">
+                  <td className="px-4 py-3.5 text-right space-x-1.5 whitespace-nowrap">
                     <button
                       onClick={() => openEditModal(v)}
                       className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors"
@@ -578,7 +605,7 @@ export function VisitsClient({ role }: VisitsClientProps) {
               ))}
               {visits.length === 0 && !loading && (
                 <tr>
-                  <td colSpan={8} className="px-6 py-8 text-center text-slate-400">
+                  <td colSpan={role === "ADMIN" ? 9 : 8} className="px-6 py-8 text-center text-slate-400">
                     No visit reports recorded matching criteria.
                   </td>
                 </tr>
@@ -980,6 +1007,143 @@ export function VisitsClient({ role }: VisitsClientProps) {
             </button>
           </div>
         </form>
+      </Dialog>
+      {/* View Details & Notes Modal */}
+      <Dialog
+        isOpen={isViewOpen}
+        onClose={() => {
+          setIsViewOpen(false);
+          setViewingVisit(null);
+        }}
+        title="Visit Report & Discussion Notes"
+        description={
+          viewingVisit
+            ? `Visit conducted on ${viewingVisit.visitDate.split("T")[0]} for ${viewingVisit.customer.name}`
+            : ""
+        }
+        maxWidth="lg"
+      >
+        {viewingVisit && (
+          <div className="space-y-4 text-xs">
+            {/* Customer & Rep banner */}
+            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <span className="text-[10px] font-bold uppercase text-slate-400">Customer</span>
+                <div className="font-bold text-sm text-slate-900 dark:text-white mt-0.5">
+                  {viewingVisit.customer.name}
+                </div>
+                {viewingVisit.customer.companyName && (
+                  <div className="text-slate-500 font-medium">{viewingVisit.customer.companyName}</div>
+                )}
+                <div className="text-slate-500 mt-1">
+                  📞 {viewingVisit.customer.phone} {viewingVisit.customer.email && `• ✉️ ${viewingVisit.customer.email}`}
+                </div>
+              </div>
+
+              <div>
+                <span className="text-[10px] font-bold uppercase text-slate-400">Representative & Company</span>
+                <div className="font-bold text-sm text-slate-900 dark:text-white mt-0.5">
+                  {viewingVisit.employee?.user?.name || "Representative"}
+                </div>
+                <div className="text-blue-600 dark:text-blue-400 font-medium">
+                  {viewingVisit.company?.name}
+                </div>
+                <div className="mt-1 flex items-center gap-2">
+                  <Badge variant={viewingVisit.status === "COMPLETED" ? "success" : viewingVisit.status === "PENDING" ? "warning" : "destructive"}>
+                    {viewingVisit.status}
+                  </Badge>
+                  <span className="text-purple-600 dark:text-purple-400 font-semibold">
+                    {viewingVisit.visitType.replace("_", " ")}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Discussion Notes Section */}
+            <div className="p-4 rounded-2xl bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200/60 dark:border-blue-800/40">
+              <div className="flex items-center gap-2 font-bold text-blue-900 dark:text-blue-200 text-sm mb-2">
+                <FileText className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                Visit Notes & Discussion Report
+              </div>
+              {viewingVisit.visitReport ? (
+                <p className="text-slate-800 dark:text-slate-200 whitespace-pre-wrap leading-relaxed text-xs sm:text-sm bg-white/70 dark:bg-slate-900/70 p-3.5 rounded-xl border border-blue-100 dark:border-blue-900/60 font-sans">
+                  {viewingVisit.visitReport}
+                </p>
+              ) : (
+                <div className="text-slate-400 italic py-2">No discussion notes were recorded for this visit.</div>
+              )}
+            </div>
+
+            {/* Visit Details: Date, Location, GPS, Next Followup */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-700/60">
+                <span className="text-[10px] font-bold uppercase text-slate-400">Date & Time</span>
+                <div className="font-semibold text-slate-800 dark:text-slate-200 mt-1 flex items-center gap-1.5">
+                  <Calendar className="w-3.5 h-3.5 text-blue-500" />
+                  {viewingVisit.visitDate.split("T")[0]} {viewingVisit.visitTime && `at ${viewingVisit.visitTime}`}
+                </div>
+                {viewingVisit.nextFollowupDate && (
+                  <div className="mt-2 text-purple-600 dark:text-purple-400 font-medium">
+                    📅 Next Follow-up: {viewingVisit.nextFollowupDate.split("T")[0]}
+                  </div>
+                )}
+              </div>
+
+              <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-700/60">
+                <span className="text-[10px] font-bold uppercase text-slate-400">Location</span>
+                <div className="font-semibold text-slate-800 dark:text-slate-200 mt-1 flex items-start gap-1.5">
+                  <MapPin className="w-3.5 h-3.5 text-rose-500 shrink-0 mt-0.5" />
+                  <span>{viewingVisit.location || "N/A"}</span>
+                </div>
+                {viewingVisit.latitude && viewingVisit.longitude && (
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${viewingVisit.latitude},${viewingVisit.longitude}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1 text-[11px] text-blue-600 dark:text-blue-400 font-semibold hover:underline mt-1"
+                  >
+                    <Navigation className="w-3 h-3" />
+                    GPS: {viewingVisit.latitude.toFixed(4)}, {viewingVisit.longitude.toFixed(4)} (Open Map)
+                  </a>
+                )}
+              </div>
+            </div>
+
+            {/* Attachment preview if any */}
+            {viewingVisit.attachment && (
+              <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-700/60 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Paperclip className="w-4 h-4 text-purple-500" />
+                  <div>
+                    <div className="font-bold text-slate-800 dark:text-slate-200">Attached Document / Photo</div>
+                    <div className="text-[10px] text-slate-400">Uploaded during visit entry</div>
+                  </div>
+                </div>
+                <a
+                  href={viewingVisit.attachment}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center gap-1 transition-colors"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" /> View File
+                </a>
+              </div>
+            )}
+
+            <div className="flex justify-end pt-3 border-t border-slate-200 dark:border-slate-800">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsViewOpen(false);
+                  setViewingVisit(null);
+                }}
+                className="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 font-bold hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        )}
       </Dialog>
     </div>
   );
