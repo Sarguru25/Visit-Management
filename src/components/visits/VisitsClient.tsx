@@ -21,6 +21,7 @@ import {
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog } from "@/components/ui/dialog";
+import { CustomerSearchSelect } from "./CustomerSearchSelect";
 
 interface Company {
   id: string;
@@ -226,9 +227,8 @@ export function VisitsClient({ role }: VisitsClientProps) {
   const handleLocationChange = (locId: string) => {
     const selectedLoc = locations.find((l) => l.id === locId);
     if (selectedLoc) {
-      const locStr = `${selectedLoc.address || ""}${selectedLoc.city ? `, ${selectedLoc.city}` : ""}${
-        selectedLoc.state ? `, ${selectedLoc.state}` : ""
-      }${selectedLoc.pincode ? ` - ${selectedLoc.pincode}` : ""}`;
+      const locStr = `${selectedLoc.address || ""}${selectedLoc.city ? `, ${selectedLoc.city}` : ""}${selectedLoc.state ? `, ${selectedLoc.state}` : ""
+        }${selectedLoc.pincode ? ` - ${selectedLoc.pincode}` : ""}`;
 
       setFormData((prev) => ({
         ...prev,
@@ -305,6 +305,10 @@ export function VisitsClient({ role }: VisitsClientProps) {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.customerId) {
+      setErrorMsg("Please select a customer.");
+      return;
+    }
     setSubmitting(true);
     setErrorMsg("");
 
@@ -415,13 +419,13 @@ export function VisitsClient({ role }: VisitsClientProps) {
       nextFollowupDate: v.nextFollowupDate ? v.nextFollowupDate.split("T")[0] : "",
     });
     setAttachmentUrl(v.attachment);
-    
+
     // Load locations and contacts for edit
     await loadLocations(v.customer.id);
     if (v.locationId) {
       await loadContactsByLocation(v.locationId);
     }
-    
+
     setIsEditOpen(true);
   };
 
@@ -629,23 +633,16 @@ export function VisitsClient({ role }: VisitsClientProps) {
           )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-             <div className="sm:col-span-2">
+            <div className="sm:col-span-2">
               <label className="block font-semibold mb-1">Select Customer *</label>
-              <select
-                required
+              <CustomerSearchSelect
+                customers={customers}
                 value={formData.customerId}
-                onChange={(e) => handleCustomerChange(e.target.value)}
-                className="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 font-bold"
-              >
-                <option value="">-- Choose Customer --</option>
-                {customers.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name} {c.companyName ? `(${c.companyName})` : ""}
-                  </option>
-                ))}
-              </select>
+                onChange={handleCustomerChange}
+                required
+              />
             </div>
-             <div className="sm:col-span-2 md:col-span-1">
+            <div className="sm:col-span-2 md:col-span-1">
               <label className="block font-semibold mb-1">Select Location *</label>
               <select
                 required
@@ -662,12 +659,12 @@ export function VisitsClient({ role }: VisitsClientProps) {
                 ))}
               </select>
             </div>
-             <div className="sm:col-span-2 md:col-span-1">
+            <div className="sm:col-span-2 md:col-span-1">
               <label className="block font-semibold mb-1">Select Contact *</label>
               <select
                 required
                 value={formData.contactId}
-                onChange={(e) => setFormData({...formData, contactId: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, contactId: e.target.value })}
                 className="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 font-bold text-indigo-600"
                 disabled={!formData.locationId}
               >
@@ -698,12 +695,12 @@ export function VisitsClient({ role }: VisitsClientProps) {
                 </div>
               )}
             </div>
-             <div className="sm:col-span-2 md:col-span-1">
+            <div className="sm:col-span-2 md:col-span-1">
               <label className="block font-semibold mb-1">Select Company Profile *</label>
               <select
                 required
                 value={formData.companyId}
-                onChange={(e) => setFormData({...formData, companyId: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, companyId: e.target.value })}
                 className="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 font-bold text-blue-600"
               >
                 <option value="">-- Choose Company --</option>
@@ -865,21 +862,16 @@ export function VisitsClient({ role }: VisitsClientProps) {
           )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-             <div className="sm:col-span-2">
+            <div className="sm:col-span-2">
               <label className="block font-semibold mb-1">Customer *</label>
-              <select
-                disabled
+              <CustomerSearchSelect
+                customers={customers}
                 value={formData.customerId}
-                className="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 font-bold opacity-70"
-              >
-                {customers.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name} {c.companyName ? `(${c.companyName})` : ""}
-                  </option>
-                ))}
-              </select>
+                onChange={() => {}}
+                disabled
+              />
             </div>
-             <div className="sm:col-span-2 md:col-span-1">
+            <div className="sm:col-span-2 md:col-span-1">
               <label className="block font-semibold mb-1">Contact *</label>
               <select
                 disabled
@@ -889,7 +881,7 @@ export function VisitsClient({ role }: VisitsClientProps) {
                 <option value={formData.contactId}>{selectedVisit?.contact?.name || "Unknown"}</option>
               </select>
             </div>
-             <div className="sm:col-span-2 md:col-span-1">
+            <div className="sm:col-span-2 md:col-span-1">
               <label className="block font-semibold mb-1">Company Profile *</label>
               <select
                 disabled
