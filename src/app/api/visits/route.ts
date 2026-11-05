@@ -62,9 +62,22 @@ export async function GET(req: NextRequest) {
     if (visitType) whereClause.visitType = visitType;
 
     if (dateFrom || dateTo) {
-      whereClause.visitDate = {};
-      if (dateFrom) (whereClause.visitDate as Record<string, string>).gte = dateFrom;
-      if (dateTo) (whereClause.visitDate as Record<string, string>).lte = dateTo;
+      const dateFilter: Record<string, Date> = {};
+      if (dateFrom) {
+        const parsedFrom = new Date(dateFrom.includes("T") ? dateFrom : `${dateFrom}T00:00:00.000Z`);
+        if (!isNaN(parsedFrom.getTime())) {
+          dateFilter.gte = parsedFrom;
+        }
+      }
+      if (dateTo) {
+        const parsedTo = new Date(dateTo.includes("T") ? dateTo : `${dateTo}T23:59:59.999Z`);
+        if (!isNaN(parsedTo.getTime())) {
+          dateFilter.lte = parsedTo;
+        }
+      }
+      if (Object.keys(dateFilter).length > 0) {
+        whereClause.visitDate = dateFilter;
+      }
     }
 
     if (search) {

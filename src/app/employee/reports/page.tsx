@@ -15,6 +15,7 @@ import {
   Users,
   MapPin,
   Eye,
+  RotateCcw,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -92,19 +93,41 @@ export default function EmployeeReportsPage() {
     loadFilterOptions();
   }, []);
 
-  const fetchReports = async () => {
+  const activeFiltersCount = [
+    employeeId,
+    customerId,
+    companyId,
+    visitType,
+    visitStatus,
+    dateFrom,
+    dateTo,
+    segment,
+    type,
+  ].filter(Boolean).length;
+
+  const fetchReports = async (overrideFilters?: {
+    employeeId?: string;
+    customerId?: string;
+    companyId?: string;
+    visitType?: string;
+    visitStatus?: string;
+    dateFrom?: string;
+    dateTo?: string;
+    segment?: string;
+    type?: string;
+  }) => {
     try {
       setLoading(true);
       const queryParams = new URLSearchParams({
-        employeeId,
-        customerId,
-        companyId,
-        visitType,
-        visitStatus,
-        dateFrom,
-        dateTo,
-        segment,
-        type,
+        employeeId: overrideFilters?.employeeId !== undefined ? overrideFilters.employeeId : employeeId,
+        customerId: overrideFilters?.customerId !== undefined ? overrideFilters.customerId : customerId,
+        companyId: overrideFilters?.companyId !== undefined ? overrideFilters.companyId : companyId,
+        visitType: overrideFilters?.visitType !== undefined ? overrideFilters.visitType : visitType,
+        visitStatus: overrideFilters?.visitStatus !== undefined ? overrideFilters.visitStatus : visitStatus,
+        dateFrom: overrideFilters?.dateFrom !== undefined ? overrideFilters.dateFrom : dateFrom,
+        dateTo: overrideFilters?.dateTo !== undefined ? overrideFilters.dateTo : dateTo,
+        segment: overrideFilters?.segment !== undefined ? overrideFilters.segment : segment,
+        type: overrideFilters?.type !== undefined ? overrideFilters.type : type,
       }).toString();
 
       const res = await fetch(`${API_BASE}/api/reports?${queryParams}`);
@@ -118,6 +141,29 @@ export default function EmployeeReportsPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleResetFilters = () => {
+    setEmployeeId("");
+    setCustomerId("");
+    setCompanyId("");
+    setVisitType("");
+    setVisitStatus("");
+    setDateFrom("");
+    setDateTo("");
+    setSegment("");
+    setType("");
+    fetchReports({
+      employeeId: "",
+      customerId: "",
+      companyId: "",
+      visitType: "",
+      visitStatus: "",
+      dateFrom: "",
+      dateTo: "",
+      segment: "",
+      type: "",
+    });
   };
 
   useEffect(() => {
@@ -259,8 +305,25 @@ export default function EmployeeReportsPage() {
 
       {/* Filter Options Panel */}
       <Card className="p-5">
-        <div className="flex items-center gap-2 mb-4 text-xs font-bold text-slate-400 uppercase tracking-wider">
-          <Filter className="w-4 h-4 text-blue-500" /> Filter Criteria
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-wider">
+            <Filter className="w-4 h-4 text-blue-500" /> Filter Criteria
+            {activeFiltersCount > 0 && (
+              <span className="px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300 text-[10px] font-bold lowercase">
+                {activeFiltersCount} active
+              </span>
+            )}
+          </div>
+          {activeFiltersCount > 0 && (
+            <button
+              type="button"
+              onClick={handleResetFilters}
+              disabled={loading}
+              className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 font-medium flex items-center gap-1 transition-colors disabled:opacity-50 cursor-pointer"
+            >
+              <RotateCcw className="w-3 h-3" /> Clear all
+            </button>
+          )}
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
@@ -399,6 +462,27 @@ export default function EmployeeReportsPage() {
               className="w-full p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-transparent font-medium"
             />
           </div>
+
+          <div className="flex items-end gap-2.5 lg:col-span-3 sm:col-span-1 pt-1 sm:pt-0">
+            <button
+              type="button"
+              onClick={() => fetchReports()}
+              disabled={loading}
+              className="h-[39px] px-6 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-95 text-white font-bold text-xs shadow-md shadow-blue-500/20 hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+            >
+              <Filter className="w-3.5 h-3.5" />
+              {loading ? "Applying..." : "Apply Filter"}
+            </button>
+            <button
+              type="button"
+              onClick={handleResetFilters}
+              disabled={loading}
+              className="h-[39px] px-4 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-95 text-slate-600 dark:text-slate-300 font-bold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-60"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              Reset Filters
+            </button>
+          </div>
         </div>
       </Card>
 
@@ -456,6 +540,17 @@ export default function EmployeeReportsPage() {
                   </td>
                 </tr>
               ))}
+
+              {reports.length === 0 && loading && (
+                <tr>
+                  <td colSpan={8} className="px-6 py-12 text-center text-slate-400">
+                    <div className="flex items-center justify-center gap-2">
+                      <Clock className="w-4 h-4 animate-spin text-blue-500" />
+                      <span>Loading report data...</span>
+                    </div>
+                  </td>
+                </tr>
+              )}
 
               {reports.length === 0 && !loading && (
                 <tr>
