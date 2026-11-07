@@ -39,6 +39,9 @@ export async function GET(
           orderBy: { createdAt: "desc" },
           include: { customer: true },
         },
+        companies: {
+          include: { company: true },
+        },
         _count: {
           select: { assignments: true, visits: true },
         },
@@ -74,7 +77,7 @@ export async function PUT(
 
     if (!employee) return errorResponse("Employee not found", 404);
 
-    const { name, phone, department, designation, status, newPassword } = body;
+    const { name, phone, department, designation, status, newPassword, truflowTarget, zeetorkTarget, target } = body;
 
     let hashedPassword = undefined;
     if (newPassword && newPassword.trim().length >= 6) {
@@ -91,19 +94,80 @@ export async function PUT(
       },
     });
 
+    const truflowVal = truflowTarget !== undefined ? Math.max(0, Number(truflowTarget) || 0) : employee.truflowTarget;
+    const zeetorkVal = zeetorkTarget !== undefined ? Math.max(0, Number(zeetorkTarget) || 0) : employee.zeetorkTarget;
+    const totalTargetVal = target !== undefined
+      ? Math.max(0, Number(target) || 0)
+      : (truflowTarget !== undefined || zeetorkTarget !== undefined)
+        ? ((truflowVal || 0) + (zeetorkVal || 0))
+        : employee.target;
+
     const updatedEmployee = await prisma.employee.update({
       where: { id },
       data: {
         department: department !== undefined ? department : employee.department,
         designation: designation !== undefined ? designation : employee.designation,
         status: status !== undefined ? status : employee.status,
+        target: totalTargetVal,
+        truflowTarget: truflowVal,
+        zeetorkTarget: zeetorkVal,
       },
       include: {
         user: {
           select: { id: true, name: true, email: true, phone: true, status: true },
         },
+        companies: {
+          include: { company: true },
+        },
       },
     });
+
+    // Sync EmployeeCompany targets
+    try {
+      const allCompanies = await prisma.company.findMany();
+      const truflowComp = allCompanies.find((c) => c.name.toLowerCase().includes("truflow") || c.code === "TRU");
+      const zeetorkComp = allCompanies.find((c) => c.name.toLowerCase().includes("zeetork") || c.code === "ZTK");
+
+      if (truflowComp && truflowVal !== null && truflowVal !== undefined) {
+        await prisma.employeeCompany.upsert({
+          where: {
+            employeeId_companyId: {
+              employeeId: id,
+              companyId: truflowComp.id,
+            },
+          },
+          create: {
+            employeeId: id,
+            companyId: truflowComp.id,
+            target: truflowVal,
+          },
+          update: {
+            target: truflowVal,
+          },
+        });
+      }
+
+      if (zeetorkComp && zeetorkVal !== null && zeetorkVal !== undefined) {
+        await prisma.employeeCompany.upsert({
+          where: {
+            employeeId_companyId: {
+              employeeId: id,
+              companyId: zeetorkComp.id,
+            },
+          },
+          create: {
+            employeeId: id,
+            companyId: zeetorkComp.id,
+            target: zeetorkVal,
+          },
+          update: {
+            target: zeetorkVal,
+          },
+        });
+      }
+    } catch (compErr) {
+      console.error("Error updating EmployeeCompany targets:", compErr);
+    }
 
     await logActivity({
       userId: session.userId,

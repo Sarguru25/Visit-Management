@@ -14,6 +14,7 @@ import {
   Building,
   Mail,
   Phone,
+  Target,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -24,6 +25,15 @@ interface EmployeeItem {
   department: string;
   designation: string;
   status: string;
+  target?: number | null;
+  truflowTarget?: number | null;
+  zeetorkTarget?: number | null;
+  companies?: Array<{
+    id: string;
+    companyId: string;
+    target?: number | null;
+    company: { id: string; name: string; code: string };
+  }>;
   user: {
     id: string;
     name: string;
@@ -33,7 +43,8 @@ interface EmployeeItem {
     createdAt: string;
   };
   _count: {
-    leads: number;
+    leads?: number;
+    assignments?: number;
     visits: number;
   };
 }
@@ -52,13 +63,14 @@ export default function AdminEmployeesPage() {
   // Form State
   const [formData, setFormData] = useState({
     firstName: "",
-    lastName: "",
     email: "",
     password: "",
     phone: "",
     department: "Enterprise Sales",
     designation: "Sales Executive",
     status: "ACTIVE",
+    truflowTarget: "",
+    zeetorkTarget: "",
   });
 
   const [editPassword, setEditPassword] = useState("");
@@ -86,20 +98,31 @@ export default function AdminEmployeesPage() {
       const res = await fetch(`${API_BASE}/api/employees`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          firstName: formData.firstName,
+          email: formData.email,
+          password: formData.password,
+          phone: formData.phone,
+          department: formData.department,
+          designation: formData.designation,
+          status: formData.status,
+          truflowTarget: formData.truflowTarget ? parseFloat(formData.truflowTarget) : 0,
+          zeetorkTarget: formData.zeetorkTarget ? parseFloat(formData.zeetorkTarget) : 0,
+        }),
       });
       const json = await res.json();
       if (json.success) {
         setIsCreateOpen(false);
         setFormData({
           firstName: "",
-          lastName: "",
           email: "",
           password: "",
           phone: "",
           department: "Enterprise Sales",
           designation: "Sales Executive",
           status: "ACTIVE",
+          truflowTarget: "",
+          zeetorkTarget: "",
         });
         loadEmployees();
       } else {
@@ -118,12 +141,14 @@ export default function AdminEmployeesPage() {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: formData.firstName + " " + formData.lastName,
+          name: formData.firstName,
           phone: formData.phone,
           department: formData.department,
           designation: formData.designation,
           status: formData.status,
           newPassword: editPassword || undefined,
+          truflowTarget: formData.truflowTarget ? parseFloat(formData.truflowTarget) : 0,
+          zeetorkTarget: formData.zeetorkTarget ? parseFloat(formData.zeetorkTarget) : 0,
         }),
       });
       const json = await res.json();
@@ -152,16 +177,16 @@ export default function AdminEmployeesPage() {
 
   const openEditModal = (emp: EmployeeItem) => {
     setSelectedEmp(emp);
-    const names = emp.user.name.split(" ");
     setFormData({
-      firstName: names[0] || "",
-      lastName: names.slice(1).join(" ") || "",
+      firstName: emp.user.name || "",
       email: emp.user.email,
       password: "",
       phone: emp.user.phone || "",
       department: emp.department || "Sales",
       designation: emp.designation || "Sales Executive",
       status: emp.status || "ACTIVE",
+      truflowTarget: emp.truflowTarget ? String(emp.truflowTarget) : "",
+      zeetorkTarget: emp.zeetorkTarget ? String(emp.zeetorkTarget) : "",
     });
     setEditPassword("");
     setIsEditOpen(true);
@@ -222,7 +247,8 @@ export default function AdminEmployeesPage() {
                 <th className="px-6 py-3.5">Employee Name</th>
                 <th className="px-6 py-3.5">Department & Title</th>
                 <th className="px-6 py-3.5">Contact Info</th>
-                <th className="px-6 py-3.5">Assigned Leads</th>
+                <th className="px-6 py-3.5 whitespace-nowrap">Annual Target</th>
+              {/*   <th className="px-6 py-3.5">Assigned Leads</th> */}
                 <th className="px-6 py-3.5">Total Visits</th>
                 <th className="px-6 py-3.5">Status</th>
                 <th className="px-6 py-3.5 text-right">Actions</th>
@@ -254,9 +280,32 @@ export default function AdminEmployeesPage() {
                       <Phone className="w-3 h-3 text-slate-400" /> {emp.user.phone || "N/A"}
                     </div>
                   </td>
-                  <td className="px-6 py-4 font-bold text-blue-600 dark:text-blue-400">
-                    {emp._count.leads} Leads
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {(Number(emp.truflowTarget) > 0 || Number(emp.zeetorkTarget) > 0 || Number(emp.target) > 0) ? (
+                      <div className="space-y-0.5">
+                        <div className="font-bold text-slate-900 dark:text-white">
+                          ₹{Number((emp.truflowTarget || 0) + (emp.zeetorkTarget || 0) || emp.target || 0).toLocaleString("en-IN")}
+                        </div>
+                        <div className="text-[10px] text-slate-500 flex flex-col font-medium">
+                          {Number(emp.truflowTarget) > 0 && (
+                            <span className="text-blue-600 dark:text-blue-400">
+                              Truflow: ₹{Number(emp.truflowTarget).toLocaleString("en-IN")}
+                            </span>
+                          )}
+                          {Number(emp.zeetorkTarget) > 0 && (
+                            <span className="text-purple-600 dark:text-purple-400">
+                              Zeetork: ₹{Number(emp.zeetorkTarget).toLocaleString("en-IN")}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    ) : (
+                      <span className="text-slate-400 italic text-[11px]">Not set</span>
+                    )}
                   </td>
+                  {/* <td className="px-6 py-4 font-bold text-blue-600 dark:text-blue-400">
+                    {emp._count.leads} Leads
+                  </td> */}
                   <td className="px-6 py-4 font-bold text-emerald-600 dark:text-emerald-400">
                     {emp._count.visits} Visits
                   </td>
@@ -286,7 +335,7 @@ export default function AdminEmployeesPage() {
 
               {employees.length === 0 && !loading && (
                 <tr>
-                  <td colSpan={7} className="px-6 py-8 text-center text-slate-400">
+                  <td colSpan={8} className="px-6 py-8 text-center text-slate-400">
                     No employees found matching filter.
                   </td>
                 </tr>
@@ -304,27 +353,15 @@ export default function AdminEmployeesPage() {
         description="Add a field sales representative account to access the portal."
       >
         <form onSubmit={handleCreate} className="space-y-4 text-xs">
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block font-semibold mb-1 text-slate-700 dark:text-slate-300">First Name *</label>
-              <input
-                type="text"
-                required
-                value={formData.firstName}
-                onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                className="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent text-slate-900 dark:text-white"
-              />
-            </div>
-            <div>
-              <label className="block font-semibold mb-1 text-slate-700 dark:text-slate-300">Last Name *</label>
-              <input
-                type="text"
-                required
-                value={formData.lastName}
-                onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                className="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent text-slate-900 dark:text-white"
-              />
-            </div>
+          <div>
+            <label className="block font-semibold mb-1 text-slate-700 dark:text-slate-300">First Name *</label>
+            <input
+              type="text"
+              required
+              value={formData.firstName}
+              onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+              className="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent text-slate-900 dark:text-white"
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -382,6 +419,70 @@ export default function AdminEmployeesPage() {
             </div>
           </div>
 
+          {/* Target Section (Admin Only) */}
+          <div className="p-3.5 rounded-2xl bg-blue-50/60 dark:bg-slate-800/60 border border-blue-200/80 dark:border-slate-700 space-y-2.5">
+            <div className="flex items-center justify-between">
+              <div className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                <Target className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                <span>Annual Sales Target (₹)</span>
+              </div>
+              <span className="text-[9px] uppercase tracking-wider font-extrabold text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/60 px-2 py-0.5 rounded-full">
+                Admin Only
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400">
+              Set the annual target for Truflow and/or Zeetork. Leave blank or 0 if not assigned to that company.
+            </p>
+            <div className="grid grid-cols-2 gap-3 pt-1">
+              <div>
+                <label className="block font-semibold mb-1 text-slate-700 dark:text-slate-300">
+                  Truflow Target (₹)
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  step="any"
+                  placeholder="e.g. 10000000"
+                  value={formData.truflowTarget}
+                  onChange={(e) => setFormData({ ...formData, truflowTarget: e.target.value })}
+                  className="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
+                />
+                {Number(formData.truflowTarget) > 0 && (
+                  <div className="text-[10px] text-blue-600 dark:text-blue-400 font-semibold mt-1">
+                    ₹{Number(formData.truflowTarget).toLocaleString("en-IN")}
+                  </div>
+                )}
+              </div>
+              <div>
+                <label className="block font-semibold mb-1 text-slate-700 dark:text-slate-300">
+                  Zeetork Target (₹)
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  step="any"
+                  placeholder="e.g. 5000000"
+                  value={formData.zeetorkTarget}
+                  onChange={(e) => setFormData({ ...formData, zeetorkTarget: e.target.value })}
+                  className="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
+                />
+                {Number(formData.zeetorkTarget) > 0 && (
+                  <div className="text-[10px] text-purple-600 dark:text-purple-400 font-semibold mt-1">
+                    ₹{Number(formData.zeetorkTarget).toLocaleString("en-IN")}
+                  </div>
+                )}
+              </div>
+            </div>
+            {(Number(formData.truflowTarget) > 0 || Number(formData.zeetorkTarget) > 0) && (
+              <div className="pt-2 border-t border-blue-100 dark:border-slate-700 flex justify-between items-center text-[11px] font-bold text-slate-700 dark:text-slate-300">
+                <span>Total Annual Target:</span>
+                <span className="text-emerald-600 dark:text-emerald-400 text-xs">
+                  ₹{(Number(formData.truflowTarget || 0) + Number(formData.zeetorkTarget || 0)).toLocaleString("en-IN")}
+                </span>
+              </div>
+            )}
+          </div>
+
           <div className="flex justify-end space-x-3 pt-4 border-t border-slate-200 dark:border-slate-800">
             <button
               type="button"
@@ -408,15 +509,13 @@ export default function AdminEmployeesPage() {
       >
         <form onSubmit={handleUpdate} className="space-y-4 text-xs">
           <div>
-            <label className="block font-semibold mb-1">Full Name</label>
+            <label className="block font-semibold mb-1">First Name *</label>
             <input
               type="text"
-              value={formData.firstName + " " + formData.lastName}
-              onChange={(e) => {
-                const parts = e.target.value.split(" ");
-                setFormData({ ...formData, firstName: parts[0] || "", lastName: parts.slice(1).join(" ") });
-              }}
-              className="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
+              required
+              value={formData.firstName}
+              onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+              className="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent text-slate-900 dark:text-white"
             />
           </div>
 
@@ -463,6 +562,70 @@ export default function AdminEmployeesPage() {
                 className="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent"
               />
             </div>
+          </div>
+
+          {/* Target Section (Admin Only) */}
+          <div className="p-3.5 rounded-2xl bg-blue-50/60 dark:bg-slate-800/60 border border-blue-200/80 dark:border-slate-700 space-y-2.5">
+            <div className="flex items-center justify-between">
+              <div className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                <Target className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                <span>Annual Sales Target (₹)</span>
+              </div>
+              <span className="text-[9px] uppercase tracking-wider font-extrabold text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/60 px-2 py-0.5 rounded-full">
+                Admin Only
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400">
+              Set the annual target for Truflow and/or Zeetork. Leave blank or 0 if not assigned to that company.
+            </p>
+            <div className="grid grid-cols-2 gap-3 pt-1">
+              <div>
+                <label className="block font-semibold mb-1 text-slate-700 dark:text-slate-300">
+                  Truflow Target (₹)
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  step="any"
+                  placeholder="e.g. 10000000"
+                  value={formData.truflowTarget}
+                  onChange={(e) => setFormData({ ...formData, truflowTarget: e.target.value })}
+                  className="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
+                />
+                {Number(formData.truflowTarget) > 0 && (
+                  <div className="text-[10px] text-blue-600 dark:text-blue-400 font-semibold mt-1">
+                    ₹{Number(formData.truflowTarget).toLocaleString("en-IN")}
+                  </div>
+                )}
+              </div>
+              <div>
+                <label className="block font-semibold mb-1 text-slate-700 dark:text-slate-300">
+                  Zeetork Target (₹)
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  step="any"
+                  placeholder="e.g. 5000000"
+                  value={formData.zeetorkTarget}
+                  onChange={(e) => setFormData({ ...formData, zeetorkTarget: e.target.value })}
+                  className="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
+                />
+                {Number(formData.zeetorkTarget) > 0 && (
+                  <div className="text-[10px] text-purple-600 dark:text-purple-400 font-semibold mt-1">
+                    ₹{Number(formData.zeetorkTarget).toLocaleString("en-IN")}
+                  </div>
+                )}
+              </div>
+            </div>
+            {(Number(formData.truflowTarget) > 0 || Number(formData.zeetorkTarget) > 0) && (
+              <div className="pt-2 border-t border-blue-100 dark:border-slate-700 flex justify-between items-center text-[11px] font-bold text-slate-700 dark:text-slate-300">
+                <span>Total Annual Target:</span>
+                <span className="text-emerald-600 dark:text-emerald-400 text-xs">
+                  ₹{(Number(formData.truflowTarget || 0) + Number(formData.zeetorkTarget || 0)).toLocaleString("en-IN")}
+                </span>
+              </div>
+            )}
           </div>
 
           <div className="flex justify-end space-x-3 pt-4 border-t border-slate-200 dark:border-slate-800">

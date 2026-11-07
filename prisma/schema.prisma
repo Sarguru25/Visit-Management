@@ -42,18 +42,21 @@ model Company {
 }
 
 model Employee {
-  id          String               @id @default(uuid())
-  userId      String               @unique
-  designation String?
-  department  String?
-  status      String               @default("ACTIVE")
-  createdAt   DateTime             @default(now())
-  updatedAt   DateTime             @updatedAt
-  assignments CustomerAssignment[]
-  user        User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
-  companies   EmployeeCompany[]
-  sales       Sale[]
-  visits      Visit[]
+  id            String               @id @default(uuid())
+  userId        String               @unique
+  designation   String?
+  department    String?
+  target        Float?               @default(0)
+  truflowTarget Float?               @default(0)
+  zeetorkTarget Float?               @default(0)
+  status        String               @default("ACTIVE")
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+  assignments   CustomerAssignment[]
+  user          User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  companies     EmployeeCompany[]
+  sales         Sale[]
+  visits        Visit[]
 }
 
 model EmployeeCompany {
@@ -63,6 +66,7 @@ model EmployeeCompany {
   role        String?
   isPrimary   Boolean   @default(false)
   status      String    @default("ACTIVE")
+  target      Float?    @default(0)
   joiningDate DateTime?
   leavingDate DateTime?
   createdAt   DateTime  @default(now())
